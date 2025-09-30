@@ -1,0 +1,84 @@
+﻿  Filament.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/Filament.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  Game.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/Game.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  GeometryUtils.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/GeometryUtils.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  Main.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/Main.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  MainMenuScene.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/MainMenuScene.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  Player.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/Player.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  ResouceManager.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/ResouceManager.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  UIButton.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/UIButton.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  UIManager.cpp
+C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,47): warning C4275: se ha utilizado una interfaz no de DLL class 'std::runtime_error' como base para la interfaz DLL class 'sf::Exception'
+  (compilando archivo de origen "src/UIManager.cpp")
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      vea la declaración de 'std::runtime_error'
+      C:\TwinWire_SFML\TwinWire_SFML\libs\include\SFML\System\Exception.hpp(41,23):
+      vea la declaración de 'sf::Exception'
+  
+  Generando código...
+  TwinWire_SFML.vcxproj -> C:\TwinWire_SFML\TwinWire_SFML\bin\Debug\TwinWire_SFML.exe
+  C:\TwinWire_SFML\TwinWire_SFML\res\Assets\Fonts\PixelifySans-VariableFont_wght.ttf
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-audio-3.dll
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-audio-d-3.dll
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-graphics-3.dll
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-graphics-d-3.dll
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-system-3.dll
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-system-d-3.dll
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-window-3.dll
+  C:\TwinWire_SFML\TwinWire_SFML\res\dll\sfml-window-d-3.dll
+  9 archivo(s) copiado(s)
