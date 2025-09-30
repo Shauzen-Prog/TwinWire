@@ -1,18 +1,27 @@
-/.vs/
-/.idea/
-/vcpkg_installed/
-/build/
-/bin/
-/obj/
-/out/
-/Debug/
-/Release/
-/CMakeFiles/
-/CMakeCache.txt
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# Build dirs (en cualquier profundidad)
+**/bin/**
+**/obj/**
+**/build/**
+**/out/**
+**/Debug/**
+**/Release/**
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+
+# VS caches
 *.ipch
 *.VC.db
 *.opendb
 *.user
 *.suo
 *.cache
-/.git_backup_*/
