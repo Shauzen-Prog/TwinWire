@@ -25,3 +25,10 @@ CMakeCache.txt
 *.user
 *.suo
 *.cache
+
+# Debug/Release en cualquier nivel
+**/Debug/**
+**/Release/**
+
+# Símbolos y cachés
+*.pdb
