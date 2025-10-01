@@ -39,6 +39,12 @@ void Player::handleInput()
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) x -= 1.f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) x += 1.f;
     m_vel.x = x * m_speed;
+
+    // Facing por movimiento
+    if (m_vel.x > 1e-3f) m_facingRight = true;
+    else if (m_vel.x < -1e-3f) m_facingRight = false;
+
+    applyVisualTransform();
 }
 
 void Player::update(float dt, const sf::RenderWindow& window)
@@ -54,7 +60,7 @@ void Player::update(float dt, const sf::RenderWindow& window)
         m_filB.forceRetract();
     }
     m_prevRecall = recallDown;
-
+    
     // --- Mouse (world)
     const sf::Vector2i mpPix   = sf::Mouse::getPosition(window);
     const sf::Vector2f mpWorld = window.mapPixelToCoords(mpPix);
@@ -71,6 +77,13 @@ void Player::update(float dt, const sf::RenderWindow& window)
     const bool A_free = m_filA.canFire();      // no animando, sin cooldown, no attached
     const bool B_free = m_filB.canFire();
     const bool A_attached = m_filA.isAttached();
+
+    // Si hubo click (izq o der), orientarse hacia ese lado
+    if (edgeL || edgeR) {
+        const float handX = getHandSocketWorld().x;
+        m_facingRight = (mpWorld.x >= handX);
+        applyVisualTransform(); // actualizp el flip antes de disparar
+    }
 
     // Reglas:
     // - Exclusividad normal: solo dispara si ambos estan libres
@@ -163,6 +176,7 @@ sf::Vector2f Player::computeShootDirToMouse(const sf::RenderWindow& window) cons
 
 void Player::setVisualScale(float s) {
     m_visualScale = s;
+    applyVisualTransform();
     // aplica inmediatamente respetando el flip
     const float sx = m_facingRight ? 1.f : -1.f;
     m_sprite.setScale({ sx * m_visualScale, m_visualScale });
@@ -188,5 +202,12 @@ void Player::setChokeQuery(IChokeQuery* q)
         m_filB.setRaycast(ray);
     else
         m_filB.setRaycast(nullptr);
+}
+
+void Player::applyVisualTransform()
+{
+    // Escala X segun signo
+    const float sx = m_facingRight ?  m_visualScale : -m_visualScale;
+    m_sprite.setScale({ sx, m_visualScale });
 }
 

@@ -1,0 +1,36 @@
+#pragma once
+#include <SFML/Graphics.hpp>
+#include "ResouceManager.h"
+#include <optional>
+
+class Boss; //fwd
+
+class Orb
+{
+public:
+    Orb(ResouceManager& rm, const std::string& texturePath, sf::Vector2f worldPos, float scale);
+
+    void setBoss(Boss* b) {m_boss = b;}
+    void setActive(bool v) {m_active = v;}
+    bool isActive() const {return m_active;}
+    
+    void update(float dt);
+    void draw(sf::RenderTarget& rt) const;
+    
+    sf::FloatRect bounds() const {return m_sprite.getGlobalBounds();}
+    sf::Vector2f center() const;
+
+    // Llamado por el pilar cuando cae encima del orbe
+    void breakOrb();
+
+private:
+    ResouceManager& m_rm;
+    ResouceManager::TexturePtr m_tex;
+    sf::Sprite m_sprite;
+    
+    bool m_active{true};
+    float m_respawnTimer{-1.f};
+    float m_respawnTime{5.f};
+    
+    Boss* m_boss{nullptr};
+};

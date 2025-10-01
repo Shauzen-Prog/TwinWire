@@ -3,6 +3,8 @@
 #include "ResouceManager.h"
 #include "IChockeable.h"
 
+class Orb;
+
 class Pillar : public IChockeable
 {
 public:
@@ -14,6 +16,10 @@ public:
 
     void setActive(bool v) { m_active = v; }
     bool isActive() const  { return m_active; }
+
+    //Orbe que colisiona
+    void setTargetOrb(Orb* orb) {m_targetOrb = orb;}
+    void setFallDelay(float seconds) { m_fallDelay = std::max(0.f, seconds);}
 
     // IChockeable
     void onChoke(const sf::Vector2f&, const sf::Vector2f&) override;
@@ -30,4 +36,10 @@ private:
     bool m_active{true};
 
     float m_respawnTimer{-1.f};
+
+    // Caida por tiempo
+    Orb* m_targetOrb{nullptr};
+    bool m_isFalling{false};
+    float m_fallDelay{0.f}; // tiempo de caida
+    float m_fallTimer{-1.f};
 };

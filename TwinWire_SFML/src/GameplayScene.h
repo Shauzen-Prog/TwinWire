@@ -5,7 +5,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <optional>
-
+#include "IChockeable.h"
 #include "IScene.h"
 #include "Pillar.h"
 #include "ResouceManager.h"
@@ -36,6 +36,11 @@ private:
     ResouceManager::TexturePtr m_bgTex;
     std::unique_ptr<sf::Sprite> m_bgSprite;
     bool m_bgPixelPerfect = true;
+
+    std::vector<std::unique_ptr<Orb>> m_orbs; //lista de orbes
+    std::vector<IChockeable*> m_liveChoke;
+
+    Orb& spawnOrb(ResouceManager& rm, const std::string& tex, sf::Vector2f pos, float scale = 1.f);
     
     std::vector<std::unique_ptr<Pillar>> m_pillars;
     std::vector<Pillar*> m_livePtrs;

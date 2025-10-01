@@ -11,8 +11,6 @@ class Player
 {
 public:
     explicit Player(ResouceManager& rm, const std::string& sheetPath);
-
-    
     
     // Setea los frames (rect + pivotX por frame). 
     void setFrames(const std::vector<FrameMeta>& frames, bool loop = true);

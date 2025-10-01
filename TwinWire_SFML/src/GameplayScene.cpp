@@ -6,6 +6,8 @@
 #include <utility>
 #include <cmath>
 
+#include "Orb.h"
+
 // Frame único: 0,0 → 18,31 (width=19, height=32), pivotX ≈ 9 px.
 // duration grande para “no avanzar” (queda fijo).
 static std::vector<FrameMeta> makeInitialIdleFrames()
@@ -51,7 +53,7 @@ static inline SegClip segmentVsRect(const sf::Vector2f& a,
     return { true, t0, { a.x + d.x * t0, a.y + d.y * t0 } };
 }
 
-// Versión boolean con outHit 
+// Version boolean con outHit 
 static inline bool segmentVsRect(const sf::Vector2f& a,
     const sf::Vector2f& b,
     const sf::FloatRect& r,
@@ -75,16 +77,13 @@ struct GameplayScene::MultiPillarQuery : IChokeQuery {
         IChockeable* best = nullptr; float bestT = 1e9f; sf::Vector2f bestP{};
         for (Pillar* p : *pillars) {
             if (!p || !p->isActive()) continue;
-            const auto c = segmentVsRect(a, b, p->bounds());
+            const SegClip c = segmentVsRect(a, b, p->bounds());
             if (c.hit && c.t < bestT) { bestT = c.t; bestP = c.p; best = p; }
         }
         if (best) outHit = bestP;
         return best;
     }
 };
-
-
-
 
 GameplayScene::GameplayScene(std::string sheetPath)
 : m_sheetPath(std::move(sheetPath)), m_player(m_res, "../Assets/Sprites/Player/PlayerSpriteSheet.png")
@@ -104,18 +103,35 @@ void GameplayScene::onEnter(Game& game)
         rebuildBackgroundForWindow(game.Window());
     }
 
-    const auto win = game.Window().getSize();
+    const sf::Vector2u win = game.Window().getSize();
     const float groundY = win.y * 0.965f;
 
-    spawnPillar(m_res, "../Assets/Sprites/Pillar.png",
-        std::nullopt,
-        { win.x * 0.55f, groundY }, 1.f);
+    
 
-    spawnPillar(m_res, "../Assets/Sprites/Pillar.png",
-        std::nullopt,
-        { win.x * 0.70f, groundY }, 1.f);
+    Pillar& p1Left = spawnPillar(m_res, "../Assets/Sprites/Pillar.png",
+                             std::nullopt,
+                             {win.x * 0.05f, groundY}, 1.f);
 
+    Pillar& p2Right = spawnPillar(m_res, "../Assets/Sprites/Pillar.png",
+                             std::nullopt,
+                             {win.x * 0.95f, groundY}, 1.f);
 
+    // altura de los orbes
+    const float yOrbs = win.y * 0.60f;
+
+    Orb& oLeft = spawnOrb(m_res, "../Assets/Sprites/Orb.png", {win.x * 0.2f, yOrbs}, 1.f);
+    Orb& oRight = spawnOrb(m_res, "../Assets/Sprites/Orb.png", {win.x * 0.8f, yOrbs}, 1.f);
+    
+    p1Left.setTargetOrb(&oLeft);
+    p2Right.setTargetOrb(&oRight);
+    
+    p1Left.setFallDelay(0.9f);
+    p2Right.setFallDelay(0.9f);
+
+    // pilar respawn
+    p1Left.respawnIn(0.5f);
+    p2Right.respawnIn(0.5f);
+    
     m_query = std::make_unique<MultiPillarQuery>(); // ctor vacío
     m_query->pillars = &m_livePtrs;                
     m_player.setChokeQuery(m_query.get());
@@ -154,15 +170,40 @@ void GameplayScene::handleInput(Game& game)
 
 void GameplayScene::update(Game& game, float dt)
 {
+    // Pilar Update
     for (auto& p : m_pillars) if (p) p->update(dt);
+
+    // Orbe Update
+    for (auto& o : m_orbs)
+        if (o) o->update(dt);
+    
     m_player.update(dt, game.Window()); //flip hacia le mouse
 }
 
 void GameplayScene::draw(Game& game, sf::RenderTarget& target)
 {
- 
+    
     if (m_bgSprite) target.draw(*m_bgSprite);
 
+    // ---- Orbs ----
+    for (auto& o : m_orbs)
+    {
+        if (!o) continue;
+        if (!o->isActive()) continue; 
+
+        // sprite del orbe
+        o->draw(target);
+
+        // Debug AABB (amarillo)
+        const auto r = o->bounds();
+        sf::RectangleShape box({ r.size.x, r.size.y });
+        box.setPosition(r.position);
+        box.setFillColor(sf::Color::Transparent);
+        box.setOutlineThickness(1.f);
+        box.setOutlineColor(sf::Color(255, 255, 0)); // amarillo
+        target.draw(box);
+    }
+    
     for (auto& up : m_pillars)
     {
         if (!up || !up->isActive()) continue;
@@ -187,8 +228,8 @@ void GameplayScene::rebuildBackgroundForWindow(const sf::RenderWindow& window)
 {
     if (!m_bgTex || !m_bgSprite) return;
 
-    const auto tex = m_bgTex->getSize();
-    const auto win = window.getSize();
+    const sf::Vector2u tex = m_bgTex->getSize();
+    const sf::Vector2u win = window.getSize();
 
     const float sx = static_cast<float>(win.x) / tex.x;
     const float sy = static_cast<float>(win.y) / tex.y;
@@ -223,6 +264,14 @@ void GameplayScene::rebuildBackgroundForWindow(const sf::RenderWindow& window)
     const sf::Vector2f pos{ (win.x - bgSize.x) * 0.5f, (win.y - bgSize.y) * 0.5f };
     m_bgSprite->setPosition(pos);
     
+}
+
+Orb& GameplayScene::spawnOrb(ResouceManager& rm, const std::string& tex, sf::Vector2f pos, float scale)
+{
+    std::unique_ptr<Orb>& up = m_orbs.emplace_back(std::make_unique<Orb>(rm, tex, pos, scale));
+    Orb* raw = up.get();
+
+    return *raw;
 }
 
 Pillar& GameplayScene::spawnPillar(ResouceManager& rm, const std::string& tex,

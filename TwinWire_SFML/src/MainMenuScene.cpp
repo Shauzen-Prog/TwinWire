@@ -38,9 +38,9 @@ void MainMenuScene::onEnter(Game& game)
         { 240.f, 60.f}
         );
     playBtn.setColors(
-        sf::Color(30, 34, 40),   // normal
-        sf::Color(80, 140, 220), // hover
-sf::Color(40, 90, 170) ); // pressed
+        sf::Color(88, 76, 140),   // normal
+        sf::Color(120, 76, 140), // hover
+sf::Color(96, 140, 76) ); // pressed
     playBtn.setTextColor(sf::Color(230, 230, 230));
     playBtn.setOnClick([&game]{
     
@@ -53,6 +53,13 @@ sf::Color(40, 90, 170) ); // pressed
         { center.x, static_cast<float>(winSize.y) * 0.5f },
         { 240.f, 60.f}
         );
+    optionsBtn.setColors(
+    
+        sf::Color(88, 76, 140),   // normal
+        sf::Color(120, 76, 140), // hover
+        sf::Color(96, 140, 76) );
+        playBtn.setTextColor(sf::Color(230, 230, 230));
+    
     optionsBtn.setOnClick([&game]{
         //game.SwitchTo(SceneId::Options);
     });
@@ -63,6 +70,14 @@ sf::Color(40, 90, 170) ); // pressed
         { center.x, static_cast<float>(winSize.y) * 0.65f },
         { 240.f, 60.f}
         );
+
+    creditsBtn.setColors(
+    sf::Color(88, 76, 140),   // normal
+    sf::Color(120, 76, 140), // hover
+    sf::Color(96, 140, 76) );
+    
+    playBtn.setTextColor(sf::Color(230, 230, 230));
+    
     creditsBtn.setOnClick([&game]{
         //game.SwitchTo(SceneId::Credits);
     });
@@ -73,6 +88,12 @@ sf::Color(40, 90, 170) ); // pressed
         { center.x, static_cast<float>(winSize.y) * 0.8f },
         { 240.f, 60.f}
         );
+    exitBtn.setColors(
+    sf::Color(88, 76, 140),   // normal
+   sf::Color(120, 76, 140), // hover
+   sf::Color(96, 140, 76) );
+    playBtn.setTextColor(sf::Color(230, 230, 230));
+    
     exitBtn.setOnClick([&game]{
         game.RequestQuit();
     });

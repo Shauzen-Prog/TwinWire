@@ -2,13 +2,9 @@
 #include "IChockeable.h"
 #include <cmath>
 
-
-static inline float vlen(sf::Vector2f v){ return std::sqrt(v.x*v.x + v.y*v.y); }
-
 Filament::Filament(float thickness)
 : m_state(*this)
 {
-    
     m_beam.setSize({0.f, thickness});
     m_beam.setOrigin({0.f, thickness * 0.5f});
     m_beam.setFillColor(sf::Color(200,220,255));
