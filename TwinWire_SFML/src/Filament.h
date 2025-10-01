@@ -11,7 +11,7 @@ class Filament
 public:
 	Filament(float thickness = 3.f); //constructor con grosor
 	Filament(); // constructor por defecto
-	~Filament(); // nunca se si es realmente necesario
+	// puse el destructor y murio xdd
 
 	void fireStraight(const sf::Vector2f& origin, const sf::Vector2f& mouseWorld, bool canAttach = true);
 	// El Player le pasa la mano cada frame (si Lock está activo, se ignora durante la anim)
