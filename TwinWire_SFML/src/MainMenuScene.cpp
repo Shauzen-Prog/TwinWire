@@ -35,8 +35,13 @@ void MainMenuScene::onEnter(Game& game)
         *m_font,
         "Jugar",
         { center.x, static_cast<float>(winSize.y) * 0.35f },
-        { 240.f, 64.f}
+        { 240.f, 60.f}
         );
+    playBtn.setColors(
+        sf::Color(30, 34, 40),   // normal
+        sf::Color(80, 140, 220), // hover
+sf::Color(40, 90, 170) ); // pressed
+    playBtn.setTextColor(sf::Color(230, 230, 230));
     playBtn.setOnClick([&game]{
     
         game.SwitchTo(SceneId::Gameplay);
@@ -46,7 +51,7 @@ void MainMenuScene::onEnter(Game& game)
     auto& optionsBtn = m_ui.createButton(
         *m_font, "Opciones",
         { center.x, static_cast<float>(winSize.y) * 0.5f },
-        { 240.f, 64.f}
+        { 240.f, 60.f}
         );
     optionsBtn.setOnClick([&game]{
         //game.SwitchTo(SceneId::Options);
@@ -56,7 +61,7 @@ void MainMenuScene::onEnter(Game& game)
     auto& creditsBtn = m_ui.createButton(
         *m_font, "Creditos",
         { center.x, static_cast<float>(winSize.y) * 0.65f },
-        { 240.f, 64.f}
+        { 240.f, 60.f}
         );
     creditsBtn.setOnClick([&game]{
         //game.SwitchTo(SceneId::Credits);
@@ -66,7 +71,7 @@ void MainMenuScene::onEnter(Game& game)
     auto& exitBtn = m_ui.createButton(
         *m_font, "Salir",
         { center.x, static_cast<float>(winSize.y) * 0.8f },
-        { 240.f, 64.f}
+        { 240.f, 60.f}
         );
     exitBtn.setOnClick([&game]{
         game.RequestQuit();

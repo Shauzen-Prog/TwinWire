@@ -4,11 +4,16 @@
 #include <vector>
 
 #include <SFML/Graphics.hpp>
+#include <optional>
 
 #include "IScene.h"
+#include "Pillar.h"
 #include "ResouceManager.h"
 #include "Player.h"
 #include "SpriteAnimator.h" // por FrameMeta (solo tipo)
+
+class Pillar;             // fwd
+struct IChokeQuery;       // fwd
 
 class GameplayScene : public IScene
 {
@@ -26,12 +31,22 @@ public:
     
 private:
     // --- Background ---
+    struct MultiPillarQuery;                       //fwd anidada
+    std::unique_ptr<MultiPillarQuery> m_query;
     ResouceManager::TexturePtr m_bgTex;
     std::unique_ptr<sf::Sprite> m_bgSprite;
     bool m_bgPixelPerfect = true;
     
-    
+    std::vector<std::unique_ptr<Pillar>> m_pillars;
+    std::vector<Pillar*> m_livePtrs;
+
+    Pillar& spawnPillar(ResouceManager& rm,
+        const std::string& tex,
+        std::optional<sf::IntRect> rect,
+        sf::Vector2f pos,
+        float scale = 1.f);
+
     std::string m_sheetPath;
     ResouceManager m_res;        
-    std::unique_ptr<Player> m_player;
+    Player m_player;
 };

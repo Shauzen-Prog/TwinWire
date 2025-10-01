@@ -54,7 +54,7 @@ public:
     }
 
     void update(float dt) {
-        if (!m_current) return;
+        if (!m_current.has_value()) return;  
         if (auto it = m_table.find(*m_current); it != m_table.end() && it->second.update)
             it->second.update(m_owner, dt);
     }
@@ -65,6 +65,8 @@ public:
         if (auto it = m_table.find(*m_current); it != m_table.end() && it->second.event)
             it->second.event(m_owner, evt);
     }
+
+    bool has() const { return m_current.has_value(); }
     
 private:
     TOwner& m_owner;

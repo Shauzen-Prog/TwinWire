@@ -97,6 +97,11 @@ void UIButton::setColors(const sf::Color& normal, const sf::Color& hover, const 
     m_colPressed = pressed;
 }
 
+void UIButton::setTextColor(const sf::Color& color)
+{
+    m_text.setFillColor(color);
+}
+
 bool UIButton::containsPoint(const sf::Vector2f& p) const
 {
     const auto b = m_box.getGlobalBounds();
@@ -109,3 +114,4 @@ void UIButton::centerText()
     m_text.setOrigin({ b.position.x + b.size.x * 0.5f, b.position.y + b.size.y * 0.5f });
     m_text.setPosition(m_box.getPosition());
 }
+

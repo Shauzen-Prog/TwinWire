@@ -71,16 +71,16 @@ void Game::handleEvents()
 {
     while (const std::optional<sf::Event> event = m_window->pollEvent())
     {
-        if (event->is<sf::Event::Closed>())
-        {
+        const sf::Event e = *event;  // ← COPIA LOCAL, segura el scope
+
+        if (e.is<sf::Event::Closed>()) {
             m_window->close();
             continue;
         }
 
-        if (m_current)
-        {
+        if (m_current) {
             if (auto it = m_scenes.find(*m_current); it != m_scenes.end() && it->second)
-                it->second->handleEvent(*this, *event);
+                it->second->handleEvent(*this, e); // ← paso la COPIA, no *event
         }
     }
 }

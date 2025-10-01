@@ -25,6 +25,7 @@ public:
 
     // Styling
     void setColors(const sf::Color& normal, const sf::Color& hover, const sf::Color& pressed);
+    void setTextColor(const sf::Color& color);
 
 private:
     sf::RectangleShape m_box;

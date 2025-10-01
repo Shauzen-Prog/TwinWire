@@ -26,6 +26,7 @@
     <ClCompile Include="src\GeometryUtils.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MainMenuScene.cpp" />
+    <ClCompile Include="src\Pillar.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\ResouceManager.cpp" />
     <ClCompile Include="src\SpriteAnimator.cpp" />
@@ -39,9 +40,11 @@
     <ClInclude Include="src\GameplayScene.h" />
     <ClInclude Include="src\GeometryUtils.h" />
     <ClInclude Include="src\IChockeable.h" />
+    <ClInclude Include="src\IChokeQuery.h" />
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\IWidget.h" />
     <ClInclude Include="src\MainMenuScene.h" />
+    <ClInclude Include="src\Pillar.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\ResouceManager.h" />
     <ClInclude Include="src\SpriteAnimator.h" />

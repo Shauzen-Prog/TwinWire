@@ -5,7 +5,7 @@ UIButton& UIManager::createButton(const sf::Font& font, const std::string& label
 {
     m_buttons.emplace_back(std::make_unique<UIButton>(font, label, centerPos, size));
 
-    auto* raw = static_cast<UIButton*>(m_buttons.back().get()); // sabemos que es un UIButton
+    UIButton* raw = static_cast<UIButton*>(m_buttons.back().get()); // sabemos que es un UIButton
     return *raw;
 }
 
@@ -23,4 +23,6 @@ void UIManager::draw(sf::RenderTarget& target) const
 {
     for (const std::unique_ptr<IWidget>& w : m_buttons) w->draw(target);
 }
+
+
 
