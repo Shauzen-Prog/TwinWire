@@ -50,7 +50,8 @@ private:
     ResouceManager& m_rm;
     ResouceManager::TexturePtr m_sheet;   // spritesheet completo
 
-   
+    bool m_prevRecall = false; 
+    
     bool m_prevLeft{false};
     bool m_prevRight{false};
     

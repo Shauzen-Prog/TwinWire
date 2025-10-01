@@ -16,7 +16,7 @@ static std::vector<FrameMeta> makeInitialIdleFrames()
 }
 
 
-// ----- Helpers de recorte segmento vs AABB (SFML 3) -----
+// ----- Helpers de recorte segmento vs AABB  -----
 struct SegClip {
     bool hit{ false };
     float t{ 0.f };             // parámetro de entrada [0..1]
@@ -51,7 +51,7 @@ static inline SegClip segmentVsRect(const sf::Vector2f& a,
     return { true, t0, { a.x + d.x * t0, a.y + d.y * t0 } };
 }
 
-// Versión boolean con outHit (por si te resulta más cómoda)
+// Versión boolean con outHit 
 static inline bool segmentVsRect(const sf::Vector2f& a,
     const sf::Vector2f& b,
     const sf::FloatRect& r,
@@ -119,8 +119,7 @@ void GameplayScene::onEnter(Game& game)
     m_query = std::make_unique<MultiPillarQuery>(); // ctor vacío
     m_query->pillars = &m_livePtrs;                
     m_player.setChokeQuery(m_query.get());
-
-    // Conectalo al Player (inyecta façade a ambos filamentos adentro)
+    
     m_player.setChokeQuery(m_query.get());
     
 
@@ -171,7 +170,7 @@ void GameplayScene::draw(Game& game, sf::RenderTarget& target)
         // Dibujo normal del pilar
         up->draw(target);
 
-        // Debug AABB (SFML 3: FloatRect.position / .size)
+        // Debug AABB (SFML 3: FloatRect.position / .size, 3 horas con esto me mato)
         const auto r = up->bounds();
         sf::RectangleShape box({ r.size.x, r.size.y });
         box.setPosition(r.position);

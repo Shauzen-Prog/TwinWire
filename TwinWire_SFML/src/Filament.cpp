@@ -61,7 +61,7 @@ Filament::Filament(float thickness)
         f.m_target = nextTip;
         f.refreshBeam();
 
-        // Alcanzó el máximo sin pegar → retraer
+        // Alcanzo el máximo sin pegar → retraer
         if (f.m_lenPx >= f.m_maxLength) {
             f.m_state.change(S::Retracting);
         }
@@ -109,7 +109,7 @@ Filament::Filament(float thickness)
     m_state.registerState(S::Cooldown, {
      /*enter*/  [](Filament& f){
          f.m_beam.setSize({0.f, f.m_beam.getSize().y});
-         f.m_cooldown = f.m_cooldownTime; // ← arranca aquí
+         f.m_cooldown = f.m_cooldownTime; // arranca aca el cdr
      },
      /*update*/ [](Filament& f, float dt){
          f.m_cooldown -= dt;
@@ -135,12 +135,12 @@ void Filament::fireStraight(const sf::Vector2f& origin, const sf::Vector2f& mous
     m_startOrigin = origin;
     m_origin      = origin; // por compatibilidad
 
-    // 2) DIRECCIÓN HORIZONTAL SOLAMENTE
+    // 2) DIRECCION HORIZONTAL SOLAMENTE
     //    Tomo el mouse solo para elegir el signo: derecha o izquierda.
     const float sx = (mouseWorld.x >= origin.x) ? 1.f : -1.f;
     m_dir = { sx, 0.f };               
 
-    // 3) Preparamos el lerp horizontal a maxLength
+    // 3) Preparo el lerp horizontal a maxLength
     m_startTarget = origin;
     m_finalTarget = origin + m_dir * m_maxLength;
 
@@ -165,7 +165,7 @@ void Filament::updateOrigin(const sf::Vector2f& world)
 void Filament::update(float dt) {
 
     
-    // cooldown (como no usamos el estado Cooldown del FSM, lo ticamos acá)
+    // cooldown 
     if (m_cooldown > 0.f) {
         m_cooldown -= dt;
         if (m_cooldown < 0.f) m_cooldown = 0.f;
@@ -173,11 +173,11 @@ void Filament::update(float dt) {
 
     // ---------- EXTENDING ----------
     if (m_extending) {
-        // si querés fijar la base durante la extensión
+        // fija la base durante la extensión
         if (m_lockOriginOnExtend) m_origin = m_startOrigin;
 
-        const sf::Vector2f diff     = m_finalTarget - m_startTarget;
-        const float        totalLen = std::max(vlen(diff), 1e-5f);
+        const sf::Vector2f diff = m_finalTarget - m_startTarget;
+        const float totalLen = std::max(vlen(diff), 1e-5f);
 
         const float tPrev = m_extendT;
         const float tNext = std::min(1.f, tPrev + (m_extendSpeed * dt) / totalLen);
@@ -207,7 +207,7 @@ void Filament::update(float dt) {
         m_target  = nextTip;
         refreshBeam();
 
-        // llegó al máximo sin pegar → retraer
+        // llego al maximo sin pegar -> retraer
         if (tNext >= 1.f) {
             m_extending   = false;
             m_retractT    = 0.f;
@@ -227,7 +227,7 @@ void Filament::update(float dt) {
             m_retracting = false;
             m_target     = m_startOrigin;
             refreshBeam();
-            m_cooldown   = m_cooldownTime;      // ← arranca CD aquí
+            m_cooldown   = m_cooldownTime;      // <- arranca CD aca
         } else {
             m_target += (back / dist) * step;
             refreshBeam();
@@ -242,13 +242,22 @@ void Filament::draw(sf::RenderTarget& target) const {
 
 void Filament::forceRetract()
 {
-    // soltar cualquier attach
+    // Si no hay nada visible, sale
+    if (m_beam.getSize().x <= 0.5f && !m_attached && !m_extending && !m_retracting)
+        return;
+
+    // Soltar cualquier attach y pasar a retraer
     m_attached    = false;
     m_attachedObj = nullptr;
 
-    // empezar la retracción desde la punta actual hacia la mano del disparo
-    if (m_state.has())
-        m_state.change(FilamentState::Retracting);
+    m_extending   = false;
+    m_retractT    = 0.f;
+    m_retracting  = true;
+
+    // Base fija durante la retracción
+    if (m_lockOriginOnExtend) m_origin = m_startOrigin;
+
+    m_state.change(FilamentState::Retracting);
 }
 
 
@@ -263,7 +272,7 @@ void Filament::refreshBeam()
     if (L <= 1e-4f) { m_beam.setSize({0.f, m_beam.getSize().y}); return; }
 
     const float ang = std::atan2(d.y, d.x);
-    m_beam.setRotation(sf::radians(ang)); // SFML 3: radianes
+    m_beam.setRotation(sf::radians(ang)); // SFML 3: se puede usar radianes :)
     m_beam.setSize({ L, m_beam.getSize().y });
 }
 

@@ -47,6 +47,14 @@ void Player::update(float dt, const sf::RenderWindow& window)
     m_pos += m_vel * dt;
     m_sprite.setPosition(m_pos);
 
+    // --- tecla R: recall de emergencia ---
+    const bool recallDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R);
+    if (!m_prevRecall && recallDown) {
+        m_filA.forceRetract();
+        m_filB.forceRetract();
+    }
+    m_prevRecall = recallDown;
+
     // --- Mouse (world)
     const sf::Vector2i mpPix   = sf::Mouse::getPosition(window);
     const sf::Vector2f mpWorld = window.mapPixelToCoords(mpPix);
@@ -60,16 +68,16 @@ void Player::update(float dt, const sf::RenderWindow& window)
     const bool edgeR = (!m_prevRight && right);
 
     // Estado de cada hilo
-    const bool A_free     = m_filA.canFire();      // no animando, sin cooldown, no attached
-    const bool B_free     = m_filB.canFire();
+    const bool A_free = m_filA.canFire();      // no animando, sin cooldown, no attached
+    const bool B_free = m_filB.canFire();
     const bool A_attached = m_filA.isAttached();
 
     // Reglas:
-    // - Exclusividad normal: sólo disparamos si ambos están libres.
-    // - EXCEPCIÓN: si A está Attached, permitimos disparar B (aunque A no esté "free").
+    // - Exclusividad normal: solo dispara si ambos estan libres
+    // - EXCEPCION: si A esta Attached, permite disparar B (aunque A no este "free")
     // - Si se presionan ambos a la vez:
-    //     * Si A está Attached ⇒ disparamos B.
-    //     * Si no ⇒ prioridad izquierda (como antes).
+    //     * Si A esta Attached ⇒ disparamos B
+    //     * Si no ⇒ prioridad izquierda
     if (edgeL && edgeR) {
         if (A_attached && B_free) {
             m_filB.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/true);
@@ -82,7 +90,7 @@ void Player::update(float dt, const sf::RenderWindow& window)
         }
     } else if (edgeR) {
         if (B_free && (A_free || A_attached)) {
-            const bool canAttachB = A_attached; // mantiene tu regla: B sólo se pega si A ya está.
+            const bool canAttachB = A_attached; // mantiene la regla: B solo se pega si A ya esta
             m_filB.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/canAttachB);
         }
     }
@@ -92,7 +100,7 @@ void Player::update(float dt, const sf::RenderWindow& window)
 
     m_filA.setColor(sf::Color::Cyan);
     
-    // Origen y actualización por frame
+    // Origen y actualizacion por frame
     m_filA.updateOrigin(getHandSocketWorld());
     m_filB.updateOrigin(getHandSocketWorld());
     m_filA.update(dt);
@@ -112,7 +120,7 @@ void Player::update(float dt, const sf::RenderWindow& window)
 void Player::draw(sf::RenderTarget& target) const
 {
     // el filamento va por detras por que se dibuja primero
-    // Dibujá primero hilos si querés que queden “debajo” del sprite
+    // Dibujá primero para que queden atras del player
     m_filA.draw(target);
     m_filB.draw(target);
     target.draw(m_sprite);

@@ -11,6 +11,7 @@ class Filament
 public:
 	Filament(float thickness = 3.f); //constructor con grosor
 	Filament(); // constructor por defecto
+	~Filament(); // nunca se si es realmente necesario
 
 	void fireStraight(const sf::Vector2f& origin, const sf::Vector2f& mouseWorld, bool canAttach = true);
 	// El Player le pasa la mano cada frame (si Lock está activo, se ignora durante la anim)
@@ -59,7 +60,7 @@ public:
 	bool isAttached() const { return m_attached; }
 	bool isExtending()  const { return m_extending; }
 	bool isRetracting() const { return m_retracting; }
-	bool isVisible()    const { return m_beam.getSize().x > 0.5f; } // útil para debug
+	bool isVisible()    const { return m_beam.getSize().x > 0.5f; } // util para debug
 	void setColor(const sf::Color& c) { m_beam.setFillColor(c); }
 
 private:
@@ -94,7 +95,7 @@ private:
 	IChockeable*  m_attachedObj{nullptr};
 	sf::Vector2f  m_attachPoint{};
 
-	float m_cooldownTime { 1.5f }; // ↔ ajustá acá el default (ej. 0.35f/0.5f)
+	float m_cooldownTime { 1.5f }; // ajusto el default 
 	float m_cooldown     { 0.f };   // tiempo restante
 
 	// Raycast
