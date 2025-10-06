@@ -11,6 +11,8 @@
 #include "ResouceManager.h"
 #include "Player.h"
 #include "SpriteAnimator.h" // por FrameMeta (solo tipo)
+#include "BulletPool.h"
+#include "BulletEmitter.h"
 
 class Pillar;             // fwd
 struct IChokeQuery;       // fwd
@@ -37,6 +39,10 @@ private:
     std::unique_ptr<sf::Sprite> m_bgSprite;
     bool m_bgPixelPerfect = true;
 
+    
+
+    sf::FloatRect m_playerAABB{}; 
+
     std::vector<std::unique_ptr<Orb>> m_orbs; //lista de orbes
     std::vector<IChockeable*> m_liveChoke;
 
@@ -51,7 +57,20 @@ private:
         sf::Vector2f pos,
         float scale = 1.f);
 
+    // Bullet API
+    BulletPool m_bullets{800}; // capacidad inicial
+    std::unique_ptr<BulletEmitter> m_emitter;
+    // culling rect (ventana + margen)
+    sf::FloatRect m_cullRect{};
+    
     std::string m_sheetPath;
     ResouceManager m_res;        
     Player m_player;
+
+#ifdef _DEBUG
+    
+    bool m_pivotTunerActive = false;
+    
+#endif
+    
 };

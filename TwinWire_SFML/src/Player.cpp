@@ -1,5 +1,109 @@
 #include "Player.h"
 #include <cmath>
+#include <optional>
+
+// -------- ANIMACIONES -------------------
+
+static std::vector<FrameMeta> leftHandSustainAttackAnim()
+{
+    return
+    {
+        /* LeftHandSustain[1/5] */F(0,32,19,32,9.f),
+        /* LeftHandSustain[2/5] */F(19,32,20,32,9.f),
+        /* LeftHandSustain[3/5] */F(40,32,23,32,9.f),
+        /* LeftHandSustain[4/5] */F(63,32,31,32,9.f),
+        /* LeftHandSustain[5/5] */F(94,32,31,32,9.f),
+    };
+}
+
+static std::vector<FrameMeta> leftHandReleasedAttackAnim()
+{
+    return
+    {
+        /* LeftHandReleased[1/5] */F(125,32,31,32,9.f),
+        /* LeftHandReleased[2/5] */F(156,32,27,32,9.f),
+        /* LeftHandReleased[3/5] */F(183,32,23,32,9.f),
+        /* LeftHandReleased[4/5] */F(206,32,20,32,9.f),
+        /* LeftHandReleased[5/5] */F(226,32,20,32,9.f),
+    };
+}
+
+static std::vector<FrameMeta> rightHandSustainAttackAnim()
+{
+    return {
+        /* RightHandSustain[1/5] */F(0,64,18,32,9.f),
+        /* RightHandSustain[2/5] */F(18,64,20,32,9.f),
+        /* RightHandSustain[3/5] */F(38,64,23,32,9.f),
+        /* RightHandSustain[4/5] */F(61,64,27,32,9.f),
+        /* RightHandSustain[5/5] */F(88,64,27,32,9.f)
+    };
+}
+
+static std::vector<FrameMeta> rightHandReleasedAttackAnim()
+{
+    return {
+        /* RightHandReleased[1/5] */F(115,64,25,32,9.f),
+        /* RightHandReleased[2/5] */F(140,64,21,32,9.f),
+        /* RightHandReleased[3/5] */F(161,64,23,32,9.f),
+        /* RightHandReleased[4/5] */F(182,64,18,32,9.f),
+        /* RightHandReleased[5/5] */F(200,64,18,32,9.f)
+    };
+}
+
+static std::vector<FrameMeta> walking()
+{
+    return {
+        /* Walking[1/8] */F(0,96,24,32,9.f),
+        /* Walking[2/8] */F(24,96,25,32,9.f),
+        /* Walking[3/8] */F(49,96,23,32,9.f),
+        /* Walking[4/8] */F(72,96,26,32,9.f),
+        /* Walking[5/8] */F(98,96,24,32,9.f),
+        /* Walking[6/8] */F(122,96,23,32,9.f),
+        /* Walking[7/8] */F(145,96,23,32,9.f),
+        /* Walking[8/8] */F(168,96,25,32,9.f)
+    };
+}
+
+static std::vector<FrameMeta> idle()
+{
+    return {
+        /* Idle[1/8] */F(0,128,19,32,9.f),
+        /* Idle[2/8] */F(19,128,19,32,9.f),
+        /* Idle[3/8] */F(38,128,20,32,9.f),
+        /* Idle[4/8] */F(58,128,20,32,9.f),
+        /* Idle[5/8] */F(78,128,22,32,9.f),
+        /* Idle[6/8] */F(100,128,22,32,9.f),
+        /* Idle[7/8] */F(122,128,21,32,9.f),
+        /* Idle[8/8] */F(143,128,19,32,9.f)
+    };
+}
+
+static std::vector<FrameMeta> makeDie()
+{
+    return {
+        /* Die[1/12] */F(0,0,19,32,9.f),
+        /* Die[2/12] */F(19,0,20,32,9.f),
+        /* Die[3/12] */F(60,0,23,32,9.f),
+        /* Die[4/12] */F(83,0,33,32,9.f),
+        /* Die[5/12] */F(116,0,38,32,9.f),
+        /* Die[6/12] */F(154,0,38,32,9.f),
+        /* Die[7/12] */F(230,0,40,32,9.f),
+        /* Die[8/12] */F(270,0,40,32,9.f),
+        /* Die[9/12] */F(310,0,42,32,9.f),
+        /* Die[10/12] */F(352,0,42,32,9.f),
+        /* Die[11/12] */F(394,0,42,32,9.f),
+        /* Die[12/12] */F(273,49,42,32,9.f)
+    };
+}
+
+
+//namespace { // datos “privados” del módulo
+//    std::vector<FrameMeta> leftHandSustainAttackAnim();
+//    std::vector<FrameMeta> leftHandReleasedAttackAnim();
+//    std::vector<FrameMeta> rightHandSustainAttackAnim();
+//    std::vector<FrameMeta> rightHandReleasedAttackAnim();
+//    std::vector<FrameMeta> makeDie();
+//}
 
 Player::Player(ResouceManager& rm, const std::string& sheetPath)
 : m_rm(rm)
@@ -23,7 +127,147 @@ Player::Player(ResouceManager& rm, const std::string& sheetPath)
 
     m_filA.setColor(sf::Color(50, 220, 255));  // A = cian
     m_filB.setColor(sf::Color(255, 230, 80));  // B = amarillo
+
+    // cacheo una vez para no tener copias
+    //m_frames[AnimId::LHSustain] = leftHandSustainAttackAnim();
+    //m_frames[AnimId::LHRelease] = leftHandReleasedAttackAnim();
+    //m_frames[AnimId::RHSustain] = rightHandSustainAttackAnim();
+    //m_frames[AnimId::RHRelease] = rightHandReleasedAttackAnim();
+    m_frames[AnimId::Walk]      = walking();
+    m_frames[AnimId::Idle]      = idle();
+    //m_frames[AnimId::Die]       = makeDie();
+
+    // inicia con uno de default
+    play(AnimId::Idle, /*loop=*/true);
 }
+
+// -------- ANIMACIONES -------------------
+
+//static std::vector<FrameMeta> leftHandSustainAttackAnim()
+//{
+//    return
+//    {
+//        /* LeftHandSustain[1/5] */F(0,32,19,32,9.f),
+//        /* LeftHandSustain[2/5] */F(19,32,20,32,9.f),
+//        /* LeftHandSustain[3/5] */F(40,32,23,32,9.f),
+//        /* LeftHandSustain[4/5] */F(63,32,31,32,9.f),
+//        /* LeftHandSustain[5/5] */F(94,32,31,32,9.f),
+//    };
+//}
+//
+//static std::vector<FrameMeta> leftHandReleasedAttackAnim()
+//{
+//    return
+//    {
+//        /* LeftHandReleased[1/5] */F(125,32,31,32,9.f),
+//        /* LeftHandReleased[2/5] */F(156,32,27,32,9.f),
+//        /* LeftHandReleased[3/5] */F(183,32,23,32,9.f),
+//        /* LeftHandReleased[4/5] */F(206,32,20,32,9.f),
+//        /* LeftHandReleased[5/5] */F(226,32,20,32,9.f),
+//    };
+//}
+//
+//static std::vector<FrameMeta> rightHandSustainAttackAnim()
+//{
+//    return {
+//        /* RightHandSustain[1/5] */F(0,64,18,32,9.f),
+//        /* RightHandSustain[2/5] */F(18,64,20,32,9.f),
+//        /* RightHandSustain[3/5] */F(38,64,23,32,9.f),
+//        /* RightHandSustain[4/5] */F(61,64,27,32,9.f),
+//        /* RightHandSustain[5/5] */F(88,64,27,32,9.f)
+//    };
+//}
+//
+//static std::vector<FrameMeta> rightHandReleasedAttackAnim()
+//{
+//    return {
+//        /* RightHandReleased[1/5] */F(115,64,25,32,9.f),
+//        /* RightHandReleased[2/5] */F(140,64,21,32,9.f),
+//        /* RightHandReleased[3/5] */F(161,64,23,32,9.f),
+//        /* RightHandReleased[4/5] */F(182,64,18,32,9.f),
+//        /* RightHandReleased[5/5] */F(200,64,18,32,9.f)
+//    };
+//}
+//
+//static std::vector<FrameMeta> walking()
+//{
+//    return {
+//        /* Walking[1/8] */F(0,96,24,32,9.f),
+//        /* Walking[2/8] */F(24,96,25,32,9.f),
+//        /* Walking[3/8] */F(49,96,23,32,9.f),
+//        /* Walking[4/8] */F(72,96,26,32,9.f),
+//        /* Walking[5/8] */F(98,96,24,32,9.f),
+//        /* Walking[6/8] */F(122,96,23,32,9.f),
+//        /* Walking[7/8] */F(145,96,23,32,9.f),
+//        /* Walking[8/8] */F(168,96,25,32,9.f)
+//    };
+//}
+//
+//static std::vector<FrameMeta> idle()
+//{
+//    return {
+//        /* Idle[1/8] */F(0,128,19,32,9.f),
+//        /* Idle[2/8] */F(19,128,19,32,9.f),
+//        /* Idle[3/8] */F(38,128,20,32,9.f),
+//        /* Idle[4/8] */F(58,128,20,32,9.f),
+//        /* Idle[5/8] */F(78,128,22,32,9.f),
+//        /* Idle[6/8] */F(100,128,22,32,9.f),
+//        /* Idle[7/8] */F(122,128,21,32,9.f),
+//        /* Idle[8/8] */F(143,128,19,32,9.f)
+//    };
+//}
+//
+//static std::vector<FrameMeta> makeDie()
+//{
+//    return {
+//        /* Die[1/12] */F(0,0,19,32,9.f),
+//        /* Die[2/12] */F(19,0,20,32,9.f),
+//        /* Die[3/12] */F(60,0,23,32,9.f),
+//        /* Die[4/12] */F(83,0,33,32,9.f),
+//        /* Die[5/12] */F(116,0,38,32,9.f),
+//        /* Die[6/12] */F(154,0,38,32,9.f),
+//        /* Die[7/12] */F(230,0,40,32,9.f),
+//        /* Die[8/12] */F(270,0,40,32,9.f),
+//        /* Die[9/12] */F(310,0,42,32,9.f),
+//        /* Die[10/12] */F(352,0,42,32,9.f),
+//        /* Die[11/12] */F(394,0,42,32,9.f),
+//        /* Die[12/12] */F(273,49,42,32,9.f)
+//    };
+//}
+//
+void Player::play(AnimId id, bool loop, bool holdLast) {
+    // Aseguro textura y sale de cualquier pausa previa
+    m_anim.setTexture(*m_sheet);
+    m_anim.setPaused(false);
+
+    const std::vector<FrameMeta>& seq = m_frames[id];
+    
+    if (!loop && holdLast)
+    {
+        // Reproducir una sola vez y quedarse estatico en el ultimo frame
+        m_anim.setHoldOnEnd(true);
+        m_anim.loopLastFrame(false);
+        m_anim.playOnceHoldLast(m_frames[id]);
+        return;
+    }
+
+    // Caso general (loop infinito o one-shot sin hold)
+    m_anim.setHoldOnEnd(false);
+    m_anim.loopLastFrame(false);
+    m_anim.setFrames(seq, loop);
+}
+
+void Player::playLoopLastFrame(AnimId id)
+{
+    m_anim.setTexture(*m_sheet);
+    m_anim.setPaused(false);
+
+    m_anim.setHoldOnEnd(false);
+    m_anim.loopLastFrame(true);
+    m_anim.setFrames(m_frames[id], false);
+}
+
+// ---------------------------------------
 
 void Player::setFrames(const std::vector<FrameMeta>& frames, bool loop)
 {
@@ -46,10 +290,41 @@ void Player::handleInput()
 
     applyVisualTransform();
 }
+void Player::playIfChanged(AnimId id, bool loop, bool holdLast)
+{
+    if (m_currentAnim == id) return;
+    play(id, loop, holdLast);  
+    m_currentAnim = id;
+}
+
+void Player::updateFacingFromVelocity()
+{
+    // Flip horizontal con scale.x
+    sf::Vector2f s = m_sprite.getScale();
+    if (m_velX > 0.f && s.x < 0.f)  m_sprite.setScale({ -s.x, s.y });
+    if (m_velX < 0.f && s.x > 0.f)  m_sprite.setScale({ -s.x, s.y });
+}
 
 void Player::update(float dt, const sf::RenderWindow& window)
 {
-    // Mover
+    // --- INPUT lateral ---
+    float dirX = 0.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) dirX -= 1.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) dirX += 1.f;
+
+    // Velocidad e integracion
+    m_velX = dirX * m_speed;
+    m_sprite.move({ m_velX * dt, 0.f});
+    
+    // Flip visual segun direccion
+    if (dirX != 0.f) updateFacingFromVelocity();
+
+    // Anim swap Walk/Idle
+    if (dirX != 0.f) playIfChanged(AnimId::Walk, true);
+    else playIfChanged(AnimId::Idle, true);
+
+    m_anim.update(dt);
+    
     m_pos += m_vel * dt;
     m_sprite.setPosition(m_pos);
 
@@ -65,7 +340,7 @@ void Player::update(float dt, const sf::RenderWindow& window)
     const sf::Vector2i mpPix   = sf::Mouse::getPosition(window);
     const sf::Vector2f mpWorld = window.mapPixelToCoords(mpPix);
 
-    // --- Botones (SFML 3)
+    // --- Botones 
     const bool left  = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
     const bool right = sf::Mouse::isButtonPressed(sf::Mouse::Button::Right);
     

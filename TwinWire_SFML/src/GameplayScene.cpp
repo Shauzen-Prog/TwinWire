@@ -5,16 +5,52 @@
 #include "IChockeable.h"
 #include <utility>
 #include <cmath>
-
+#include <iostream>
+#include <optional>
+#include "BulletEmitter.h"
 #include "Orb.h"
+#include "PivotDataIO_CSV.h"
+#include "SFML/Graphics.hpp"
+
+
 
 // Frame único: 0,0 → 18,31 (width=19, height=32), pivotX ≈ 9 px.
 // duration grande para “no avanzar” (queda fijo).
-static std::vector<FrameMeta> makeInitialIdleFrames()
+static std::vector<FrameMeta> makeDie()
 {
     return {
-        FrameMeta{ sf::IntRect{ {0, 0}, {19, 32} }, 9.f, 999.f }
+        /* Die[1/12] */F(0,0,19,32,9.f),
+        /* Die[2/12] */F(19,0,20,32,9.f),
+        /* Die[3/12] */F(60,0,23,32,9.f),
+        /* Die[4/12] */F(83,0,33,32,9.f),
+        /* Die[5/12] */F(116,0,38,32,9.f),
+        /* Die[6/12] */F(154,0,38,32,9.f),
+        /* Die[7/12] */F(230,0,40,32,9.f),
+        /* Die[8/12] */F(270,0,40,32,9.f),
+        /* Die[9/12] */F(310,0,42,32,9.f),
+        /* Die[10/12] */F(352,0,42,32,9.f),
+        /* Die[11/12] */F(394,0,42,32,9.f),
+        /* Die[12/12] */F(273,49,42,32,9.f),
     };
+}
+
+#ifdef _DEBUG
+static void drawCross(sf::RenderTarget& tgt, sf::Vector2f P, sf::Color c = sf::Color::Red) {
+    sf::Vertex h[2]{ {P+sf::Vector2f{-4,0}, c}, {P+sf::Vector2f{4,0}, c} };
+    sf::Vertex v[2]{ {P+sf::Vector2f{0,-4}, c}, {P+sf::Vector2f{0,4}, c} };
+    tgt.draw(h, 2, sf::PrimitiveType::Lines);
+    tgt.draw(v, 2, sf::PrimitiveType::Lines);
+}
+#endif
+
+
+
+// Helpers para construir el AABB del player (mundo)
+static sf::FloatRect makePlayerAABB(sf::Vector2f playerPos) {
+    const sf::Vector2f size   {10.f, 28.f};   
+    const sf::Vector2f offset {5.f, -25.f};    
+    const sf::Vector2f origin = playerPos + offset - size * 0.5f;
+    return sf::FloatRect(origin, size);
 }
 
 
@@ -92,20 +128,46 @@ GameplayScene::GameplayScene(std::string sheetPath)
 }
 
 
+
 void GameplayScene::onEnter(Game& game)
 {
 
+    auto tex = m_res.getTexture("../Assets/Sprites/Player/PlayerSpriteSheet.png");
+    if (tex) m_player.animator().setTexture(*tex);
+
+    // Carga frames iniciales
+    m_player.animator().setFrames(makeDie(), /*loop=*/true);
+    
+    // Cargá pivots desde archivo si ya existe
+    PivotDataIO_CSV::load(
+        m_player.animator(),
+        "../../../../res/Assets/Pivots/pivots.csv"
+    );
+
+    
     // Fondo
-    m_bgTex = m_res.getTexture("../Assets/Backgrounds/BackGround.png"); // a
+    m_bgTex = m_res.getTexture("../Assets/Backgrounds/BackGround.png");
     if (m_bgTex) {
         m_bgTex->setSmooth(false);
         m_bgSprite = std::make_unique<sf::Sprite>(*m_bgTex);
         rebuildBackgroundForWindow(game.Window());
     }
 
-    const sf::Vector2u win = game.Window().getSize();
-    const float groundY = win.y * 0.965f;
+    const std::string kBulletTex = "../Assets/Sprites/BossBullet1.png";
+    const sf::Vector2f kBulletScale{0.35f, 0.35f};
 
+    m_emitter = std::make_unique<BulletEmitter>(
+        m_bullets, m_res, kBulletTex, kBulletScale
+    );
+
+    const sf::Vector2u win = game.Window().getSize();
+    const float w = static_cast<float>(win.x);
+    const float h = static_cast<float>(win.y);
+    const float margin = 192.f; // margen fuera de la camara
+    
+    const float groundY = win.y * 0.965f; 
+    
+    m_cullRect = sf::FloatRect({-margin, -margin}, {w + margin * 2.f, h + margin * 2.f});
     
 
     Pillar& p1Left = spawnPillar(m_res, "../Assets/Sprites/Pillar.png",
@@ -140,13 +202,16 @@ void GameplayScene::onEnter(Game& game)
     
 
     m_player.setVisualScale(2.2f);
-    
+
+   
     //Setea SOLO el primer frame (queda fijo por ahora)
     m_player.setFrames({ { sf::IntRect{{0,0},{18,32}}, 9.f, 999.f } }, true);
+    // aplica pivots ajustados desde archivo (si existe)
+    PivotDataIO_CSV::load(m_player.animator(), "../Assets/Pivots/pivots.csv");
 
     //Posicion inicial comoda
  
-    m_player.setPosition({ win.x * 0.2f, win.y * 0.965f });
+    m_player.setPosition({ win.x * 0.2f, win.y * 0.965f});
 }
 
 void GameplayScene::onExit(Game& game)
@@ -154,14 +219,87 @@ void GameplayScene::onExit(Game& game)
    // m_player.reset();
 }
 
+#ifdef _DEBUG
+
+static void fireOneTowardMouse(BulletEmitter& emitter, const sf::RenderWindow& win, sf::Vector2f origin) {
+    const sf::Vector2i pix   = sf::Mouse::getPosition(win);
+    const sf::Vector2f world = win.mapPixelToCoords(pix);
+    const sf::Vector2f dir   = world - origin;
+    const float angle = std::atan2(dir.y, dir.x);
+    emitter.emit(origin, angle, /*speed*/ 600.f);
+}
+
+static void fireRing(BulletEmitter& e, sf::Vector2f o, int n, float spd){
+    const float twoPi=6.28318530718f, step=twoPi/static_cast<float>(n);
+    for (int i=0;i<n;++i) e.emit(o, i*step, spd);
+}
+
+
+#endif
+
+
+
 void GameplayScene::handleEvent(Game& game, const sf::Event& ev)
 {
     if (ev.is<sf::Event::Closed>())
-    {
         game.RequestQuit();
+
+    if (const sf::Event::Resized* r = ev.getIf<sf::Event::Resized>()) {
+        const float w = static_cast<float>(r->size.x);
+        const float h = static_cast<float>(r->size.y);
+        const float margin = 192.f;
+        m_cullRect = sf::FloatRect({-margin, -margin}, {w + margin * 2.f, h + margin * 2.f});
     }
-    // mas adelante clicks para filamentos, etc
+
+#ifdef _DEBUG
+    if (ev.is<sf::Event::KeyPressed>()) {
+        const sf::Event::KeyPressed* kp = ev.getIf<sf::Event::KeyPressed>();
+        if (kp->code == sf::Keyboard::Key::J && m_emitter) {
+            // origen: se usa player.getPosition()
+            const auto win = game.Window().getSize();
+            sf::Vector2f origin{ static_cast<float>(win.x) * 0.5f,
+                                 static_cast<float>(win.y) * 0.5f };
+            fireRing(*m_emitter, origin, 10, 600.f);
+        }
+    }
+
+    if (ev.is<sf::Event::KeyPressed>()) {
+        const auto& kp = *ev.getIf<sf::Event::KeyPressed>();
+
+        if (kp.code == sf::Keyboard::Key::F10) {
+            m_pivotTunerActive = !m_pivotTunerActive;
+        }
+
+        if (m_pivotTunerActive) {
+            const bool fine = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)
+                           || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::RShift);
+            const float step = fine ? 0.25f : 1.f;
+
+            if (kp.code == sf::Keyboard::Key::Left)  m_player.animator().nudgePivotX(-step);
+            if (kp.code == sf::Keyboard::Key::Right) m_player.animator().nudgePivotX(+step);
+
+            if (kp.code == sf::Keyboard::Key::F12) {
+                const int count = m_player.animator().frameCount();
+                std::cerr << "[PivotIO] F12 pressed  frames=" << count << "\n";
+                for (int i = 0; i < count; ++i) {
+                    const auto& fr = m_player.animator().frames()[i];
+                    std::cerr << "  i="<<i<<" rect=("
+                              << fr.rect.position.x << "," << fr.rect.position.y << ","
+                              << fr.rect.size.x << "," << fr.rect.size.y << ") pivot="
+                              << fr.pivotX << " dur=" << fr.duration << "\n";
+                }
+                const bool ok = PivotDataIO_CSV::save(
+                    m_player.animator(), "../../../../res/Assets/Pivots/pivots.csv"
+                );
+                std::cerr << "[PivotIO] save " << (ok ? "OK" : "FAIL") << "\n";
+            }
+        }
+    }
+
+#endif
+    
 }
+
 
 void GameplayScene::handleInput(Game& game)
 {
@@ -170,14 +308,36 @@ void GameplayScene::handleInput(Game& game)
 
 void GameplayScene::update(Game& game, float dt)
 {
+    if (dt > 0.05f) dt = 0.05f;  
+    
+    const sf::Vector2f p = m_player.getPosition();    
+    m_playerAABB = makePlayerAABB(p);
+
+    bool playerHit = false;
+    m_bullets.update(dt, m_cullRect, m_playerAABB, playerHit);
+
+    const sf::Vector2f feet = m_player.getFeetWorld();
+    const sf::Vector2f hbSize   {16.f, 22.f};  // aca se ajusta
+    const sf::Vector2f hbOffset { 0.f, -6.f};  // sube/baja/centra desde los pies
+    const sf::Vector2f hbOrigin { feet.x - hbSize.x*0.5f + hbOffset.x,
+                                  feet.y - hbSize.y       + hbOffset.y };
+    m_playerAABB = sf::FloatRect(hbOrigin, hbSize);
+    
     // Pilar Update
-    for (auto& p : m_pillars) if (p) p->update(dt);
+    for (std::unique_ptr<Pillar>& pillar : m_pillars) if (pillar) pillar->update(dt);
 
     // Orbe Update
-    for (auto& o : m_orbs)
+    for (std::unique_ptr<Orb>& o : m_orbs)
         if (o) o->update(dt);
     
     m_player.update(dt, game.Window()); //flip hacia le mouse
+   
+    if (playerHit) {
+        // TODO: aplicar daño/feedback. Por ahora, log o flash.
+        // player.takeDamage(1.f);
+        // m_screenFlash.trigger();
+    }
+    
 }
 
 void GameplayScene::draw(Game& game, sf::RenderTarget& target)
@@ -186,33 +346,36 @@ void GameplayScene::draw(Game& game, sf::RenderTarget& target)
     if (m_bgSprite) target.draw(*m_bgSprite);
 
     // ---- Orbs ----
-    for (auto& o : m_orbs)
+    for (std::unique_ptr<Orb>& orb : m_orbs)
     {
-        if (!o) continue;
-        if (!o->isActive()) continue; 
+        if (!orb) continue;
+        if (!orb->isActive()) continue; 
 
         // sprite del orbe
-        o->draw(target);
+        orb->draw(target);
 
-        // Debug AABB (amarillo)
-        const auto r = o->bounds();
-        sf::RectangleShape box({ r.size.x, r.size.y });
-        box.setPosition(r.position);
-        box.setFillColor(sf::Color::Transparent);
-        box.setOutlineThickness(1.f);
-        box.setOutlineColor(sf::Color(255, 255, 0)); // amarillo
-        target.draw(box);
+#ifdef _DEBUG
+
+        if (m_pivotTunerActive) {
+            const sf::Vector2f feet = m_player.animator().sprite().getPosition(); // origin = pivotX/base
+            drawCross(target, feet);
+        }
+        
+#endif
+        
+        
     }
     
-    for (auto& up : m_pillars)
+    
+    for (std::unique_ptr<Pillar>& uniquePillar : m_pillars)
     {
-        if (!up || !up->isActive()) continue;
+        if (!uniquePillar || !uniquePillar->isActive()) continue;
 
         // Dibujo normal del pilar
-        up->draw(target);
+        uniquePillar->draw(target);
 
-        // Debug AABB (SFML 3: FloatRect.position / .size, 3 horas con esto me mato)
-        const auto r = up->bounds();
+        // Debug AABB ( FloatRect.position / .size, 3 horas con esto me mato)
+        const auto r = uniquePillar->bounds();
         sf::RectangleShape box({ r.size.x, r.size.y });
         box.setPosition(r.position);
         box.setFillColor(sf::Color::Transparent);
@@ -221,7 +384,20 @@ void GameplayScene::draw(Game& game, sf::RenderTarget& target)
         target.draw(box);
     }
 
+    m_bullets.draw(target);
+
     m_player.draw(target);
+
+        
+#ifdef _DEBUG
+    sf::RectangleShape r;
+    r.setSize(m_playerAABB.size);
+    r.setPosition(m_playerAABB.position);
+    r.setFillColor(sf::Color::Transparent);
+    r.setOutlineThickness(1.f);
+    r.setOutlineColor(sf::Color::Green);
+    target.draw(r);
+#endif
 }
 
 void GameplayScene::rebuildBackgroundForWindow(const sf::RenderWindow& window)
@@ -237,23 +413,23 @@ void GameplayScene::rebuildBackgroundForWindow(const sf::RenderWindow& window)
     float scale = 1.f;
 
     if (m_bgPixelPerfect) {
-        // --- Pixel-perfect (factores enteros) ---
+        //  Pixel perfect 
         const bool needUp  = (sx >= 1.f && sy >= 1.f);
         const bool needDown= (sx <  1.f ||  sy <  1.f);
 
         if (needUp) {
-            // Upscale entero (2x, 3x, …)
+            // Upscale entero (2x, 3x)
             const float k = std::floor(std::min(sx, sy));
             scale = std::max(1.f, k);
         } else if (needDown) {
-            // Downscale entero (1/2, 1/3, …)
+            // Downscale entero (1/2, 1/3)
             const float kx = std::ceil(static_cast<float>(tex.x) / win.x);
             const float ky = std::ceil(static_cast<float>(tex.y) / win.y);
             const float k  = std::max(kx, ky);     // divisor entero
             scale = 1.f / k;
         }
     } else {
-        // --- Fit dentro de la ventana (uniforme, puede no ser entero) ---
+        // --- Fit dentro de la ventana ---
         scale = std::min(sx, sy);
     }
 

@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Boss.cpp" />
+    <ClCompile Include="src\BulletEmitter.cpp" />
+    <ClCompile Include="src\BulletPool.cpp" />
     <ClCompile Include="src\Filament.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\GameplayScene.cpp" />
@@ -28,6 +30,7 @@
     <ClCompile Include="src\MainMenuScene.cpp" />
     <ClCompile Include="src\Orb.cpp" />
     <ClCompile Include="src\Pillar.cpp" />
+    <ClCompile Include="src\PivotDataIO_CSV.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\ResouceManager.cpp" />
     <ClCompile Include="src\SpriteAnimator.cpp" />
@@ -36,18 +39,24 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Boss.h" />
+    <ClInclude Include="src\Bullet.h" />
+    <ClInclude Include="src\BulletEmitter.h" />
+    <ClInclude Include="src\BulletPool.h" />
     <ClInclude Include="src\Filament.h" />
     <ClInclude Include="src\FrameMeta.h" />
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\GameplayScene.h" />
     <ClInclude Include="src\GeometryUtils.h" />
+    <ClInclude Include="src\IBulletEmitter.h" />
     <ClInclude Include="src\IChockeable.h" />
     <ClInclude Include="src\IChokeQuery.h" />
+    <ClInclude Include="src\IOrb.h" />
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\IWidget.h" />
     <ClInclude Include="src\MainMenuScene.h" />
     <ClInclude Include="src\Orb.h" />
     <ClInclude Include="src\Pillar.h" />
+    <ClInclude Include="src\PivotDataIO_CSV.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\ResouceManager.h" />
     <ClInclude Include="src\SpriteAnimator.h" />
@@ -147,6 +156,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;sfml-audio-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"
@@ -170,6 +181,8 @@ XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;sfml-audio-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"
@@ -191,12 +204,13 @@ XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
       <AdditionalIncludeDirectories>$(ProjectDir)libs\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-system.lib;sfml-window.lib;sfml-graphics.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"
@@ -211,19 +225,20 @@ XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)libs\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-system.lib;sfml-window.lib;sfml-graphics.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"

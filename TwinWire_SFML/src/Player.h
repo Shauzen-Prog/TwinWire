@@ -7,6 +7,8 @@
 #include "IChockeable.h"
 #include "IChokeQuery.h"
 
+enum class AnimId { Idle, Walk, LHSustain, LHRelease, RHSustain, RHRelease, Die };
+
 class Player
 {
 public:
@@ -30,7 +32,7 @@ public:
 
     // Dirección normalizada hacia el mouse (mundo)
     sf::Vector2f computeShootDirToMouse(const sf::RenderWindow& window) const;
-
+    
     // Facing
     bool isFacingRight() const { return m_facingRight; }
 
@@ -43,7 +45,20 @@ public:
     void releaseFilament();
 
     void setChokeQuery(IChokeQuery* q);
-    
+
+    sf::Vector2f getFeetWorld() const { return m_sprite.getPosition(); }
+
+    // Animacion Getter
+    SpriteAnimator& animator() { return m_anim; }
+    const SpriteAnimator& animator() const { return m_anim; }
+
+    void play(AnimId id, bool loop = true, bool holdLast = false);
+    void playLoopLastFrame(AnimId id);
+
+    // Velocidad get y setter
+    void setSpeed(float s) { m_speed = s; }
+    float speed() const { return m_speed; }
+
 private:
     ResouceManager& m_rm;
     ResouceManager::TexturePtr m_sheet;   // spritesheet completo
@@ -58,10 +73,17 @@ private:
     SpriteAnimator m_anim;
 
     // Transform / movimiento
+    float m_speed { 220.f }; // px/s
+    float m_velX { 0.f }; 
     sf::Vector2f m_pos { 200.f, 220.f };
     sf::Vector2f m_vel { 0.f, 0.f };
-    float m_speed { 220.f };
     bool m_facingRight { true };
+
+    // Anim cache para no re-setear lo mismo
+    AnimId m_currentAnim { AnimId::Idle };
+
+    void playIfChanged(AnimId id, bool loop, bool holdLast = false);
+    void updateFacingFromVelocity();
 
     // Socket local (respecto al pivot “talón”: X variable por frame, Y = base del rect)
     sf::Vector2f m_handSocketLocal { 10.f, -22.f }; // ajustar a ojimetro
@@ -76,8 +98,11 @@ private:
 
     // elegir comportamiento: al soltar confirma o suelta
     bool m_confirmOnRelease { true }; // true = attach al soltar; false = release
+
     
     void updateFacingFromMouse(const sf::RenderWindow& window);
     void applyVisualTransform(); // position + scale (flip)
+
+    std::unordered_map<AnimId, std::vector<FrameMeta>> m_frames; // cache
     
 };
