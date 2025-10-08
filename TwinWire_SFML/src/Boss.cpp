@@ -19,9 +19,16 @@ Boss::Boss(const Params& p, IBulletEmitter* emitter, const std::vector<IOrb*>* o
     m_body.setOrigin(p.size * 0.5f);
     m_body.setFillColor(sf::Color(180,60,60));
 
-    m_beam.setOrigin({0.f, 2.f});
-    m_beam.setSize({0.f, 4.f});
-    m_beam.setFillColor(sf::Color(235,235,80));
+    // Beam principal
+    m_beam.setOrigin({0.f, m_cfg.beamBaseThickness * 0.5f});
+    m_beam.setSize({0.f, m_cfg.beamBaseThickness});
+    m_beam.setFillColor(m_cfg.beamColorP1);
+
+    // Beam Glow
+    m_beamGlow.setOrigin({0.f, (m_cfg.beamBaseThickness * 1.8f) * 0.5f});
+    m_beamGlow.setSize({0.f, (m_cfg.beamBaseThickness * 1.8f)});
+    sf::Color glowColor = m_cfg.beamColorP1; glowColor.a = 70; // alpha suave
+    m_beamGlow.setFillColor(glowColor);
 
     // Regitro los callbacks del FSM
     m_fsm.addState(State::Patrol, {
@@ -220,14 +227,26 @@ void Boss::onUpdateSeekOrb(float dt)
 void Boss::onEnterAbsorb()
 {
     m_absorbTimer = m_cfg.absorbTime;
-    updateBeamVisual(); // primera vez que se hace el draw
+    m_beamPulseT = 0.f;
+
+    //color por fase
+    const sf::Color col = (m_phase == Phase::P1) ? m_cfg.beamColorP1 : m_cfg.beamColorP2;
+    m_beam.setFillColor(col);
+    sf::Color glow = col; glow.a = 70;
+    m_beam.setOutlineColor(glow);
+    
+    updateBeamVisual(); // calcula longitud y rotacion
+    updateBeamStyle(0.f); // aplica grosor/glow inicial 
+    
 }
 
 void Boss::onUpdateAbsorb(float dt)
 {
     if (!m_currentOrb || !m_currentOrb->isActive())
     {
+        clearBeam();
         // Si el orbe es destruido mientras "absorbe" -> aplica daño y cambia de fase
+        m_currentOrb = nullptr;
         ++m_hitsTaken;
         if (m_hitsTaken >= m_hitsToKill)
         {
@@ -244,6 +263,7 @@ void Boss::onUpdateAbsorb(float dt)
     m_absorbTimer -= dt;
     if (m_absorbTimer <= 0.f)
     {
+        clearBeam();
         // Sin daño (el orbe sobrevivio al tiempo)
         m_currentOrb = nullptr;
         resetAttackCooldown();
@@ -252,6 +272,7 @@ void Boss::onUpdateAbsorb(float dt)
     }
 
     updateBeamVisual();
+    updateBeamStyle(dt);
 }
 
 void Boss::onEnterHurt()
@@ -332,17 +353,49 @@ void Boss::resetAttackCooldown()
 
 void Boss::updateBeamVisual()
 {
-    if (!m_currentOrb) { m_beam.setSize({0.f, 4.f}); return; }
+    if (!m_currentOrb) return;
+
     const sf::Vector2f a = m_position;
     const sf::Vector2f b = m_currentOrb->getPosition();
     const sf::Vector2f d = b - a;
 
     const float len = std::sqrt(d.x*d.x + d.y*d.y);
-    const float angleRad = std::atan2(d.y, d.x); // radianes
+    const float ang = std::atan2(d.y, d.x);
 
     m_beam.setPosition(a);
-    m_beam.setRotation(sf::radians(angleRad));
-    m_beam.setSize({ len, 4.f });
+    m_beam.setRotation(sf::radians(ang));
+    
+    m_beam.setSize({ len, m_beam.getSize().y });
+
+    m_beamGlow.setPosition(a);
+    m_beamGlow.setRotation(sf::radians(ang));
+    m_beamGlow.setSize({ len, m_beamGlow.getSize().y });
+}
+
+void Boss::clearBeam()
+{
+    // se apagan ambos
+    m_beam.setSize({ 0.f, m_cfg.beamBaseThickness });
+    m_beamGlow.setSize({ 0.f, m_cfg.beamBaseThickness * 1.8f });
+}
+
+void Boss::updateBeamStyle(float dt)
+{
+    // Pulso seno, thickness = base + amp * sin(2pi f t)
+    m_beamPulseT += dt;
+    const float twopi = 6.28318531f;
+    const float thick = m_cfg.beamBaseThickness
+                      + m_cfg.beamPulseAmp * std::sin(twopi * m_beamPulseT * m_cfg.beamPulseHz);
+
+    // Mantiene longitud actual (X) y solo ajusta el grosor (Y)
+    const float len = m_beam.getSize().x;
+
+    m_beam.setSize({ len, std::max(1.f, thick) });
+    m_beamGlow.setSize({ len, std::max(1.f, thick * 1.8f) });
+
+    // Alinea glow con el beam (posicion y rotacion ya seteado en updateBeamVisual)
+    m_beamGlow.setPosition(m_beam.getPosition());
+    m_beamGlow.setRotation(m_beam.getRotation());
 }
 
 void Boss::updateBodyVisual()
@@ -357,10 +410,10 @@ void Boss::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
     // Solo hace el draw del beam cuando absorbe y el orbe sigue activo
     // No tengo un (m_fsm.current()), podria crearme algo asi, peero
-    // Como parche hago esto: Hago el draw si hay tamaño > 0 (soy una rata xdd)
-    if (m_beam.getSize().x > 0.5f)
-    {
-        target.draw(m_beam, states);
+    // Como parche hago esto: Hago el draw si hay tamaño > 0.5f (soy una rata xdd)
+    if (m_beam.getSize().x > 0.5f) {
+        target.draw(m_beamGlow, states); // primero el halo
+        target.draw(m_beam, states);     // arriba el beam solido
     }
 }
 

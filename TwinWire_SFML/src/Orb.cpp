@@ -37,7 +37,9 @@ void Orb::draw(sf::RenderTarget& rt) const
 
 sf::Vector2f Orb::center() const
 {
-    return m_sprite.getTransform().transformPoint({0.f,0.f});
+    const auto b = m_sprite.getGlobalBounds(); 
+    return { b.position.x + b.size.x * 0.5f,
+             b.position.y + b.size.y * 0.5f };
 }
 
 void Orb::breakOrb()
@@ -51,4 +53,9 @@ void Orb::breakOrb()
     if (m_boss) {
         //m_boss->takeDamage(1.f); // le saca 1 de vida por orbe
     }
+}
+
+sf::Vector2f Orb::getPosition() const
+{
+    return center();
 }

@@ -132,7 +132,7 @@ void Filament::fireStraight(const sf::Vector2f& origin, const sf::Vector2f& mous
     m_origin      = origin; // por compatibilidad
 
     // 2) DIRECCION HORIZONTAL SOLAMENTE
-    //    Tomo el mouse solo para elegir el signo: derecha o izquierda.
+    // Tomo el mouse solo para elegir el signo: derecha o izquierda.
     const float sx = (mouseWorld.x >= origin.x) ? 1.f : -1.f;
     m_dir = { sx, 0.f };               
 
@@ -205,9 +205,9 @@ void Filament::update(float dt) {
 
         // llego al maximo sin pegar -> retraer
         if (tNext >= 1.f) {
-            m_extending   = false;
-            m_retractT    = 0.f;
-            m_retracting  = true;
+            m_extending = false;
+            m_retractT = 0.f;
+            m_retracting = true;
             m_state.change(FilamentState::Retracting); // informativo
         }
     }
@@ -221,9 +221,9 @@ void Filament::update(float dt) {
 
         if (step >= dist) {
             m_retracting = false;
-            m_target     = m_startOrigin;
+            m_target = m_startOrigin;
             refreshBeam();
-            m_cooldown   = m_cooldownTime;      // <- arranca CD aca
+            m_cooldown = m_cooldownTime; // <- arranca CD aca
         } else {
             m_target += (back / dist) * step;
             refreshBeam();

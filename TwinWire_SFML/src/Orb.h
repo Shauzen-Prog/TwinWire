@@ -16,7 +16,7 @@ public:
 
     // IOrb
     bool isActive() const override {return m_active;}
-    sf::Vector2f getPosition() const override {return center();}
+    sf::Vector2f getPosition() const override;
     
     void update(float dt);
     void draw(sf::RenderTarget& rt) const;

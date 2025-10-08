@@ -64,6 +64,13 @@ public:
         // RingLoop con gap (P2)
         float ringIntervalMin = 0.10f;
         float ringIntervalMax = 0.18f;
+
+        // Beam tuning
+        float beamBaseThickness = 3.f; // grosor base
+        float beamPulseAmp = 2.f; // cuánto late
+        float beamPulseHz = 6.f; // frecuencia del pulso (veces por segundo)
+        sf::Color beamColorP1 { 100, 27,  245, 255 }; // violeta en P1
+        sf::Color beamColorP2 { 255,  80,  90, 255 }; // rojizo en P2
     };
 
     Boss(const Params& p,
@@ -122,7 +129,7 @@ private:
     void emitRing(int count, float startAngleRad, float speed, bool useGap,
                   float gapCenterRad, float gapHalfRad);
     void emitToPlayerPulse(float speed); // usa WaveCtx.playerSnapshot y timeToNextPulse
-
+    
     // Helpers
     void selectClosestActiveOrb();
     bool hasActiveOrbs() const;
@@ -130,6 +137,13 @@ private:
     void resetAttackCooldown();
     void updateBodyVisual();
     void updateBeamVisual();
+
+    // Beam variables
+    float m_beamPulseT { 0.f }; // tiempo acumulado para el pulso
+    sf::RectangleShape m_beamGlow; // "halo" detras del beam
+    
+    void clearBeam();
+    void updateBeamStyle(float dt); // (solo estilos: grosor/glow)
 
     // Draw
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override; // se que no hace falta el override pero me gusta y me queda mas claro
