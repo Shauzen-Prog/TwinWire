@@ -15,26 +15,6 @@
 
 
 
-// Frame único: 0,0 → 18,31 (width=19, height=32), pivotX ≈ 9 px.
-// duration grande para “no avanzar” (queda fijo).
-static std::vector<FrameMeta> die()
-{
-    return {
-        /* Die[1/12] */F(0,0,19,32,9.f),
-        /* Die[2/12] */F(19,0,20,32,9.f),
-        /* Die[3/12] */F(60,0,23,32,9.f),
-        /* Die[4/12] */F(83,0,33,32,9.f),
-        /* Die[5/12] */F(116,0,38,32,9.f),
-        /* Die[6/12] */F(154,0,38,32,9.f),
-        /* Die[7/12] */F(230,0,40,32,9.f),
-        /* Die[8/12] */F(270,0,40,32,9.f),
-        /* Die[9/12] */F(310,0,42,32,9.f),
-        /* Die[10/12] */F(352,0,42,32,9.f),
-        /* Die[11/12] */F(394,0,42,32,9.f),
-        /* Die[12/12] */F(273,49,42,32,9.f),
-    };
-}
-
 #ifdef _DEBUG
 static void drawCross(sf::RenderTarget& tgt, sf::Vector2f P, sf::Color c = sf::Color::Red) {
     sf::Vertex h[2]{ {P+sf::Vector2f{-4,0}, c}, {P+sf::Vector2f{4,0}, c} };
@@ -128,13 +108,33 @@ GameplayScene::GameplayScene(std::string sheetPath)
     
 }
 
+void GameplayScene::PauseSetUp(Game& game)
+{
+    m_uiFont = m_res.getFont("../../../../res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf");
+    m_pause.build(*m_uiFont, game.Window().getSize());
 
+    m_pause.setOnResume([this]()
+    {
+        m_pause.hide();
+    });
+
+    m_pause.setOnOptions([]()
+    {
+       // TODO: abrir submenu de opciones cuando este listo 
+    });
+
+    m_pause.setOnExit([&game]()
+    {
+       game.SwitchTo(SceneId::MainMenu); 
+    });
+}
 
 void GameplayScene::onEnter(Game& game)
 {
     resetAll();
     m_playerDead = false;
     m_restarTimer = -1.f;
+    
     
     // Carga pivots desde archivo si ya existe
     PivotDataIO_CSV::load(
@@ -157,13 +157,15 @@ void GameplayScene::onEnter(Game& game)
     m_emitter = std::make_unique<BulletEmitter>(
         m_bullets, m_res, kBulletTex, kBulletScale
     );
-
+    
     const sf::Vector2u win = game.Window().getSize();
     const float w = static_cast<float>(win.x);
     const float h = static_cast<float>(win.y);
     const float margin = 192.f; // margen fuera de la camara
     
     const float groundY = win.y * 0.965f; 
+
+    
     
     m_cullRect = sf::FloatRect({-margin, -margin}, {w + margin * 2.f, h + margin * 2.f});
     
@@ -281,6 +283,8 @@ void GameplayScene::onEnter(Game& game)
     
     m_restarTimer = -1.f;
 
+    PauseSetUp(game);
+    m_pause.hide();
 }
 
 void GameplayScene::onExit(Game& game)
@@ -319,6 +323,21 @@ void GameplayScene::handleEvent(Game& game, const sf::Event& ev)
         const float h = static_cast<float>(r->size.y);
         const float margin = 192.f;
         m_cullRect = sf::FloatRect({-margin, -margin}, {w + margin * 2.f, h + margin * 2.f});
+        m_pause.build(*m_uiFont, { r->size.x, r->size.y });
+    }
+
+    if (ev.is<sf::Event::KeyPressed>()) {
+        const auto& kp = *ev.getIf<sf::Event::KeyPressed>();
+        if (kp.code == sf::Keyboard::Key::Escape) {
+            if (!m_uiFont) PauseSetUp(game); 
+            m_pause.toggle();
+            return; // el return previene las acciones en el frame
+        }
+    }
+    // Si la pausa es visible, manda un evento a "pauselayer" y para
+    if (m_pause.isVisible()) {
+        m_pause.handleEvent(ev, game.Window());
+        return;
     }
 
 #ifdef _DEBUG
@@ -373,6 +392,7 @@ void GameplayScene::handleEvent(Game& game, const sf::Event& ev)
 
 void GameplayScene::handleInput(Game& game)
 {
+    if (m_pause.isVisible()) return;
     if (m_playerDead) return; // saco los controles si muere
    m_player.handleInput(); // A/D 
 }
@@ -380,9 +400,11 @@ void GameplayScene::handleInput(Game& game)
 void GameplayScene::update(Game& game, float dt)
 {
     if (dt > 0.05f) dt = 0.05f;
-
-    // si esta muriendo, deja de avanzar y espera al reinicio
     
+    if (m_pause.isVisible()) {
+        m_pause.update(dt);
+        return; // freezea el juego mientras esta en pausa
+    }
     
     const sf::Vector2f p = m_player.getPosition();    
     m_playerAABB = makePlayerAABB(p);
@@ -487,6 +509,10 @@ void GameplayScene::draw(Game& game, sf::RenderTarget& target)
     m_player.draw(target);
 
     if (m_boss) target.draw(*m_boss);
+
+    // al final para que se dibuje arriba de todo
+    if (m_pause.isVisible())
+        m_pause.draw(target);
         
 #ifdef _DEBUG
     sf::RectangleShape r;

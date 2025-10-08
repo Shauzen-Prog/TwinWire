@@ -29,7 +29,7 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MainMenuScene.cpp" />
     <ClCompile Include="src\Orb.cpp" />
-    <ClCompile Include="src\PauseMenu.cpp" />
+    <ClCompile Include="src\PauseLayer.cpp" />
     <ClCompile Include="src\Pillar.cpp" />
     <ClCompile Include="src\PivotDataIO_CSV.cpp" />
     <ClCompile Include="src\Player.cpp" />
@@ -58,7 +58,7 @@
     <ClInclude Include="src\IWidget.h" />
     <ClInclude Include="src\MainMenuScene.h" />
     <ClInclude Include="src\Orb.h" />
-    <ClInclude Include="src\PauseMenu.h" />
+    <ClInclude Include="src\PauseLayer.h" />
     <ClInclude Include="src\Pillar.h" />
     <ClInclude Include="src\PivotDataIO_CSV.h" />
     <ClInclude Include="src\Player.h" />

@@ -17,6 +17,7 @@
 #include "SpriteAnimator.h" // por FrameMeta (solo tipo)
 #include "BulletPool.h"
 #include "BulletEmitter.h"
+#include "PauseLayer.h"
 
 
 class Pillar;             // fwd
@@ -26,6 +27,7 @@ class GameplayScene : public IScene
 {
 public:
     GameplayScene(std::string sheetPath);
+    void PauseSetUp(Game& game);
     ~GameplayScene() = default;
 
     void onEnter(Game& game) override;
@@ -45,10 +47,12 @@ private:
     struct MultiPillarQuery;                       //fwd anidada
     std::unique_ptr<MultiPillarQuery> m_query;
     ResouceManager::TexturePtr m_bgTex;
+    ResouceManager::FontPtr m_uiFont;
     std::unique_ptr<sf::Sprite> m_bgSprite;
     bool m_bgPixelPerfect = true;
     
-    sf::FloatRect m_playerAABB{}; 
+    sf::FloatRect m_playerAABB{};
+    PauseLayer m_pause;
 
     std::vector<std::unique_ptr<Orb>> m_orbs; //lista de orbes
     std::vector<IChockeable*> m_liveChoke;
