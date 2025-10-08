@@ -22,6 +22,8 @@ public:
     int activeCount() const { return m_active; }
     int capacity() const { return static_cast<int>(m_items.size()); }
 
+    void clear();
+
 private:
     std::vector<Bullet> m_items;
     int m_active{0}; // contado al vuelo (hint perf)

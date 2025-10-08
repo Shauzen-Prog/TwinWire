@@ -38,6 +38,9 @@ public:
     std::vector<std::function<void()>> m_deferred; // tareas para ejecutar post-update
     
 private:
+
+    void resetAll(); // helper para dejar como recien creado
+        
     // --- Background ---
     struct MultiPillarQuery;                       //fwd anidada
     std::unique_ptr<MultiPillarQuery> m_query;
@@ -70,6 +73,8 @@ private:
     std::string m_sheetPath;
     ResouceManager m_res;        
     Player m_player;
+    bool m_playerDead = false;
+    float m_restarTimer = -1.f;
 
     std::unique_ptr<Boss> m_boss;
     std::vector<IOrb*> m_orbViews;

@@ -6,7 +6,7 @@
 
 #include "IScene.h"
 
-enum class SceneId { MainMenu, Gameplay };
+enum class SceneId { MainMenu, Gameplay, WinScene };
 
 class Game
 {
@@ -22,6 +22,8 @@ public:
 
     // Facade: scene switching
     void SwitchTo(SceneId id);
+
+    void reloadCurrentScene();
 
     // Minimal access for scenes
     sf::RenderWindow& Window()             { return *m_window; }
@@ -43,10 +45,12 @@ private:
     void createWindow();
     void destroyWindow();
     void registerScenes();
-
+    
+    
     // game loop steps
     void handleEvents();
     void handleInput();
     void update(float dt);
     void draw();
+    
 };

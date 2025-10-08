@@ -83,6 +83,19 @@ void BulletPool::draw(sf::RenderTarget& rt) const
     }
 }
 
+void BulletPool::clear()
+{
+    for (auto& b : m_items)
+    {
+        b.active = false;
+        b.life = 0.f;
+        b.maxLife = 0.f;
+        b.pos = {};
+        b.vel = {};
+        b.sprite.reset();
+    }
+}
+
 
 
 

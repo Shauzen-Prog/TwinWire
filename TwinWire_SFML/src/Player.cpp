@@ -78,7 +78,7 @@ static std::vector<FrameMeta> idle()
     };
 }
 
-static std::vector<FrameMeta> makeDie()
+static std::vector<FrameMeta> die()
 {
     return {
         /* Die[1/12] */F(0,0,19,32,9.f),
@@ -96,14 +96,6 @@ static std::vector<FrameMeta> makeDie()
     };
 }
 
-
-//namespace { // datos “privados” del módulo
-//    std::vector<FrameMeta> leftHandSustainAttackAnim();
-//    std::vector<FrameMeta> leftHandReleasedAttackAnim();
-//    std::vector<FrameMeta> rightHandSustainAttackAnim();
-//    std::vector<FrameMeta> rightHandReleasedAttackAnim();
-//    std::vector<FrameMeta> makeDie();
-//}
 
 Player::Player(ResouceManager& rm, const std::string& sheetPath)
 : m_rm(rm)
@@ -129,132 +121,38 @@ Player::Player(ResouceManager& rm, const std::string& sheetPath)
     m_filB.setColor(sf::Color(255, 230, 80));  // B = amarillo
 
     // cacheo una vez para no tener copias
-    //m_frames[AnimId::LHSustain] = leftHandSustainAttackAnim();
-    //m_frames[AnimId::LHRelease] = leftHandReleasedAttackAnim();
-    //m_frames[AnimId::RHSustain] = rightHandSustainAttackAnim();
-    //m_frames[AnimId::RHRelease] = rightHandReleasedAttackAnim();
+    m_frames[AnimId::LHSustain] = leftHandSustainAttackAnim();
+    m_frames[AnimId::LHRelease] = leftHandReleasedAttackAnim();
+    m_frames[AnimId::RHSustain] = rightHandSustainAttackAnim();
+    m_frames[AnimId::RHRelease] = rightHandReleasedAttackAnim();
     m_frames[AnimId::Walk]      = walking();
     m_frames[AnimId::Idle]      = idle();
-    //m_frames[AnimId::Die]       = makeDie();
+    m_frames[AnimId::Die]       = die();
 
     // inicia con uno de default
     play(AnimId::Idle, /*loop=*/true);
 }
 
-// -------- ANIMACIONES -------------------
-
-//static std::vector<FrameMeta> leftHandSustainAttackAnim()
-//{
-//    return
-//    {
-//        /* LeftHandSustain[1/5] */F(0,32,19,32,9.f),
-//        /* LeftHandSustain[2/5] */F(19,32,20,32,9.f),
-//        /* LeftHandSustain[3/5] */F(40,32,23,32,9.f),
-//        /* LeftHandSustain[4/5] */F(63,32,31,32,9.f),
-//        /* LeftHandSustain[5/5] */F(94,32,31,32,9.f),
-//    };
-//}
-//
-//static std::vector<FrameMeta> leftHandReleasedAttackAnim()
-//{
-//    return
-//    {
-//        /* LeftHandReleased[1/5] */F(125,32,31,32,9.f),
-//        /* LeftHandReleased[2/5] */F(156,32,27,32,9.f),
-//        /* LeftHandReleased[3/5] */F(183,32,23,32,9.f),
-//        /* LeftHandReleased[4/5] */F(206,32,20,32,9.f),
-//        /* LeftHandReleased[5/5] */F(226,32,20,32,9.f),
-//    };
-//}
-//
-//static std::vector<FrameMeta> rightHandSustainAttackAnim()
-//{
-//    return {
-//        /* RightHandSustain[1/5] */F(0,64,18,32,9.f),
-//        /* RightHandSustain[2/5] */F(18,64,20,32,9.f),
-//        /* RightHandSustain[3/5] */F(38,64,23,32,9.f),
-//        /* RightHandSustain[4/5] */F(61,64,27,32,9.f),
-//        /* RightHandSustain[5/5] */F(88,64,27,32,9.f)
-//    };
-//}
-//
-//static std::vector<FrameMeta> rightHandReleasedAttackAnim()
-//{
-//    return {
-//        /* RightHandReleased[1/5] */F(115,64,25,32,9.f),
-//        /* RightHandReleased[2/5] */F(140,64,21,32,9.f),
-//        /* RightHandReleased[3/5] */F(161,64,23,32,9.f),
-//        /* RightHandReleased[4/5] */F(182,64,18,32,9.f),
-//        /* RightHandReleased[5/5] */F(200,64,18,32,9.f)
-//    };
-//}
-//
-//static std::vector<FrameMeta> walking()
-//{
-//    return {
-//        /* Walking[1/8] */F(0,96,24,32,9.f),
-//        /* Walking[2/8] */F(24,96,25,32,9.f),
-//        /* Walking[3/8] */F(49,96,23,32,9.f),
-//        /* Walking[4/8] */F(72,96,26,32,9.f),
-//        /* Walking[5/8] */F(98,96,24,32,9.f),
-//        /* Walking[6/8] */F(122,96,23,32,9.f),
-//        /* Walking[7/8] */F(145,96,23,32,9.f),
-//        /* Walking[8/8] */F(168,96,25,32,9.f)
-//    };
-//}
-//
-//static std::vector<FrameMeta> idle()
-//{
-//    return {
-//        /* Idle[1/8] */F(0,128,19,32,9.f),
-//        /* Idle[2/8] */F(19,128,19,32,9.f),
-//        /* Idle[3/8] */F(38,128,20,32,9.f),
-//        /* Idle[4/8] */F(58,128,20,32,9.f),
-//        /* Idle[5/8] */F(78,128,22,32,9.f),
-//        /* Idle[6/8] */F(100,128,22,32,9.f),
-//        /* Idle[7/8] */F(122,128,21,32,9.f),
-//        /* Idle[8/8] */F(143,128,19,32,9.f)
-//    };
-//}
-//
-//static std::vector<FrameMeta> makeDie()
-//{
-//    return {
-//        /* Die[1/12] */F(0,0,19,32,9.f),
-//        /* Die[2/12] */F(19,0,20,32,9.f),
-//        /* Die[3/12] */F(60,0,23,32,9.f),
-//        /* Die[4/12] */F(83,0,33,32,9.f),
-//        /* Die[5/12] */F(116,0,38,32,9.f),
-//        /* Die[6/12] */F(154,0,38,32,9.f),
-//        /* Die[7/12] */F(230,0,40,32,9.f),
-//        /* Die[8/12] */F(270,0,40,32,9.f),
-//        /* Die[9/12] */F(310,0,42,32,9.f),
-//        /* Die[10/12] */F(352,0,42,32,9.f),
-//        /* Die[11/12] */F(394,0,42,32,9.f),
-//        /* Die[12/12] */F(273,49,42,32,9.f)
-//    };
-//}
-//
 void Player::play(AnimId id, bool loop, bool holdLast) {
     // Aseguro textura y sale de cualquier pausa previa
     m_anim.setTexture(*m_sheet);
     m_anim.setPaused(false);
 
-    const std::vector<FrameMeta>& seq = m_frames[id];
+    const auto& seq = m_frames[id];
     
     if (!loop && holdLast)
     {
         // Reproducir una sola vez y quedarse estatico en el ultimo frame
         m_anim.setHoldOnEnd(true);
-        m_anim.loopLastFrame(false);
-        m_anim.playOnceHoldLast(m_frames[id]);
+        m_anim.setFrames(seq, /*loop=*/false);
+        m_currentAnim = id;
         return;
     }
 
     // Caso general (loop infinito o one-shot sin hold)
     m_anim.setHoldOnEnd(false);
-    m_anim.loopLastFrame(false);
     m_anim.setFrames(seq, loop);
+    m_currentAnim = id;  
 }
 
 void Player::playLoopLastFrame(AnimId id)
@@ -290,11 +188,24 @@ void Player::handleInput()
 
     applyVisualTransform();
 }
+
+void Player::lockMovement(float seconds, float slowFactor)
+{
+    m_moveLockTimer  = std::max(m_moveLockTimer, seconds); // si ya estaba bloqueado por mas tiempo, no acortar
+    m_moveSlowFactor = std::clamp(slowFactor, 0.f, 1.f);
+}
+
 void Player::playIfChanged(AnimId id, bool loop, bool holdLast)
 {
-    if (m_currentAnim == id) return;
-    play(id, loop, holdLast);  
-    m_currentAnim = id;
+    if (m_currentAnim == id) return; 
+    m_anim.setTexture(*m_sheet);
+    if (!loop && holdLast) {
+        // Reproduce una vez y congela en el ultimo frame
+        m_anim.playOnceHoldLast(m_frames[id]);
+    } else {
+        m_anim.setFrames(m_frames[id], loop);
+    }
+    m_currentAnim = id; 
 }
 
 void Player::updateFacingFromVelocity()
@@ -307,23 +218,42 @@ void Player::updateFacingFromVelocity()
 
 void Player::update(float dt, const sf::RenderWindow& window)
 {
-    // --- INPUT lateral ---
+    // Tick del timer ANTES de leer input
+    if (m_moveLockTimer > 0.f) {
+        m_moveLockTimer -= dt;
+        if (m_moveLockTimer <= 0.f) {
+            m_moveLockTimer  = 0.f;
+            m_moveSlowFactor = 1.f; // restaurar velocidad normal
+        }
+    }
+
+    m_anim.update(dt);
+    // Lee input (solo X por ahora)
     float dirX = 0.f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) dirX -= 1.f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) dirX += 1.f;
 
-    // Velocidad e integracion
-    m_velX = dirX * m_speed;
-    m_sprite.move({ m_velX * dt, 0.f});
+    // Aplica gate a la velocidad
+    const float baseSpeed = m_speed; // velocidad base
+    const float speed = isMovementLocked() ? (baseSpeed * m_moveSlowFactor) : baseSpeed;
+
+    // Integracion de movimiento (una sola vez)
+    m_velX   = dirX * speed;
+    m_vel.x  = m_velX;  
     
     // Flip visual segun direccion
     if (dirX != 0.f) updateFacingFromVelocity();
 
     // Anim swap Walk/Idle
-    if (dirX != 0.f) playIfChanged(AnimId::Walk, true);
-    else playIfChanged(AnimId::Idle, true);
-
-    m_anim.update(dt);
+    if (m_currentAnim != AnimId::Die)
+    {
+        if (std::abs(m_vel.x) > 1.f || std::abs(m_vel.y) > 1.f)
+            playIfChanged(AnimId::Walk, true);
+        else
+            playIfChanged(AnimId::Idle, true);
+    }
+    
+    
     
     m_pos += m_vel * dt;
     m_sprite.setPosition(m_pos);
@@ -331,6 +261,22 @@ void Player::update(float dt, const sf::RenderWindow& window)
     // --- tecla R: recall de emergencia ---
     const bool recallDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R);
     if (!m_prevRecall && recallDown) {
+        // Gate suave para que no se pise con el walking
+        lockMovement(0.10f, 0.2f);
+
+        // Release segun qué mano este activa
+        const bool A_active = m_filA.isExtending() || m_filA.isRetracting() || m_filA.isAttached();
+        const bool B_active = m_filB.isExtending() || m_filB.isRetracting() || m_filB.isAttached();
+
+        if (A_active && !B_active)
+            play(AnimId::LHRelease, /*loop=*/false, /*holdLast=*/true);
+        else if (B_active && !A_active) {
+            play(AnimId::RHRelease, /*loop=*/false, /*holdLast=*/true);
+        } else {
+            // Si ambos o ninguno: elegir uno (opción simple)
+            play(AnimId::LHRelease, /*loop=*/false, /*holdLast=*/true);
+        }
+
         m_filA.forceRetract();
         m_filB.forceRetract();
     }
@@ -349,7 +295,7 @@ void Player::update(float dt, const sf::RenderWindow& window)
     const bool edgeR = (!m_prevRight && right);
 
     // Estado de cada hilo
-    const bool A_free = m_filA.canFire();      // no animando, sin cooldown, no attached
+    const bool A_free = m_filA.canFire(); // no animando, sin cooldown, no attached
     const bool B_free = m_filB.canFire();
     const bool A_attached = m_filA.isAttached();
 
@@ -368,17 +314,25 @@ void Player::update(float dt, const sf::RenderWindow& window)
     //     * Si no ⇒ prioridad izquierda
     if (edgeL && edgeR) {
         if (A_attached && B_free) {
+            lockMovement(0.12f, 0.0f); // snap corto
+            playLoopLastFrame(AnimId::RHSustain);      // mano derecha (B)
             m_filB.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/true);
         } else if (A_free && B_free) {
+            lockMovement(0.12f, 0.0f);
+            playLoopLastFrame(AnimId::LHSustain);      // mano izquierda (A)
             m_filA.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/true);
         }
     } else if (edgeL) {
         if (A_free && B_free) {
+            lockMovement(0.12f, 0.0f);
+            playLoopLastFrame(AnimId::LHSustain);
             m_filA.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/true);
         }
     } else if (edgeR) {
         if (B_free && (A_free || A_attached)) {
-            const bool canAttachB = A_attached; // mantiene la regla: B solo se pega si A ya esta
+            const bool canAttachB = A_attached;
+            lockMovement(0.12f, 0.0f);
+            playLoopLastFrame(AnimId::RHSustain);
             m_filB.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/canAttachB);
         }
     }

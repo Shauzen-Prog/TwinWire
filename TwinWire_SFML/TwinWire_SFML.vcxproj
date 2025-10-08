@@ -29,6 +29,7 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MainMenuScene.cpp" />
     <ClCompile Include="src\Orb.cpp" />
+    <ClCompile Include="src\PauseMenu.cpp" />
     <ClCompile Include="src\Pillar.cpp" />
     <ClCompile Include="src\PivotDataIO_CSV.cpp" />
     <ClCompile Include="src\Player.cpp" />
@@ -36,6 +37,7 @@
     <ClCompile Include="src\SpriteAnimator.cpp" />
     <ClCompile Include="src\UIButton.cpp" />
     <ClCompile Include="src\UIManager.cpp" />
+    <ClCompile Include="src\WinScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Boss.h" />
@@ -56,6 +58,7 @@
     <ClInclude Include="src\IWidget.h" />
     <ClInclude Include="src\MainMenuScene.h" />
     <ClInclude Include="src\Orb.h" />
+    <ClInclude Include="src\PauseMenu.h" />
     <ClInclude Include="src\Pillar.h" />
     <ClInclude Include="src\PivotDataIO_CSV.h" />
     <ClInclude Include="src\Player.h" />
@@ -64,6 +67,7 @@
     <ClInclude Include="src\StateMachine.h" />
     <ClInclude Include="src\UIButton.h" />
     <ClInclude Include="src\UIManager.h" />
+    <ClInclude Include="src\WinScene.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

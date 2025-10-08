@@ -10,13 +10,14 @@
 #include "BulletEmitter.h"
 #include "Orb.h"
 #include "PivotDataIO_CSV.h"
+#include "WinScene.h"
 #include "SFML/Graphics.hpp"
 
 
 
 // Frame único: 0,0 → 18,31 (width=19, height=32), pivotX ≈ 9 px.
 // duration grande para “no avanzar” (queda fijo).
-static std::vector<FrameMeta> makeDie()
+static std::vector<FrameMeta> die()
 {
     return {
         /* Die[1/12] */F(0,0,19,32,9.f),
@@ -131,13 +132,9 @@ GameplayScene::GameplayScene(std::string sheetPath)
 
 void GameplayScene::onEnter(Game& game)
 {
-    auto tex = m_res.getTexture("../Assets/Sprites/Player/PlayerSpriteSheet.png");
-    if (tex) m_player.animator().setTexture(*tex);
-
-   
-    
-    // Carga frames iniciales
-    m_player.animator().setFrames(makeDie(), /*loop=*/true);
+    resetAll();
+    m_playerDead = false;
+    m_restarTimer = -1.f;
     
     // Carga pivots desde archivo si ya existe
     PivotDataIO_CSV::load(
@@ -238,21 +235,12 @@ void GameplayScene::onEnter(Game& game)
 
     m_boss = std::make_unique<Boss>(bp, m_emitter.get(), &m_orbViews);
 
-    m_boss->setOnDeath([this]() {
+    m_boss->setOnDeath([this, &game]() {
      // Deferimos la reacción a fin de frame (evitar destruir cosas en medio del update del boss)
-     m_deferred.push_back([this]() {
-         // reacción a la muerte:
-         // - parar/limpiar proyectiles
-         // - reproducir SFX/anim
+     m_deferred.push_back([this, &game]() {
 
-         // Remover el boss del juego 
+         game.SwitchTo(SceneId::WinScene);
          m_boss.reset();
-
-         // limpiar balas del emisor: Extender API no tiene todavia clearAll()
-         // if (m_emitter) m_emitter->clearAll(); // o como se llame
-
-         // Puedo llamar un evento Win();
-         // Win();
         });
     });
 
@@ -283,19 +271,21 @@ void GameplayScene::onEnter(Game& game)
 
    
     //Setea SOLO el primer frame (queda fijo por ahora)
-    m_player.setFrames({ { sf::IntRect{{0,0},{18,32}}, 9.f, 999.f } }, true);
+    //m_player.setFrames({ { sf::IntRect{{0,0},{18,32}}, 9.f, 999.f } }, true);
     // aplica pivots ajustados desde archivo (si existe)
     PivotDataIO_CSV::load(m_player.animator(), "../Assets/Pivots/pivots.csv");
 
     //Posicion inicial comoda
- 
     m_player.setPosition({ win.x * 0.2f, win.y * 0.965f});
-
+    m_player.play(AnimId::Idle, true);
+    
+    m_restarTimer = -1.f;
 
 }
 
 void GameplayScene::onExit(Game& game)
 {
+    m_playerDead = false;
    // m_player.reset();
 }
 
@@ -383,12 +373,16 @@ void GameplayScene::handleEvent(Game& game, const sf::Event& ev)
 
 void GameplayScene::handleInput(Game& game)
 {
+    if (m_playerDead) return; // saco los controles si muere
    m_player.handleInput(); // A/D 
 }
 
 void GameplayScene::update(Game& game, float dt)
 {
-    if (dt > 0.05f) dt = 0.05f;  
+    if (dt > 0.05f) dt = 0.05f;
+
+    // si esta muriendo, deja de avanzar y espera al reinicio
+    
     
     const sf::Vector2f p = m_player.getPosition();    
     m_playerAABB = makePlayerAABB(p);
@@ -410,15 +404,34 @@ void GameplayScene::update(Game& game, float dt)
     for (std::unique_ptr<Orb>& o : m_orbs)
         if (o) o->update(dt);
     
-    m_player.update(dt, game.Window()); //flip hacia le mouse
+   
     if (m_boss) m_boss->update(dt);
+
+    if (m_playerDead)
+    {
+        m_player.animator().update(dt);
+        m_restarTimer -= dt;
+        if (m_restarTimer <= 0.f)
+        {
+            game.reloadCurrentScene(); // <- reinicia ( On enter hace reset)
+        }
+        return;
+    }
     
     if (playerHit) {
-        // TODO: aplicar daño/feedback. Por ahora, log o flash.
-        // player.takeDamage(1.f);
-        // m_screenFlash.trigger();
-    }
+        // entra al estado de muerte
+        m_playerDead = true;
 
+        //Reproduce Die una sola vez y congela al final
+        m_player.play(AnimId::Die, false, true);
+        
+        m_restarTimer = 1.0f;
+
+        return;
+    }
+    
+    m_player.update(dt, game.Window()); //flip hacia le mouse
+   
     // No es estar checkeando, solo ejecuta si hay tarea pendiente (cuando el boss llama al callback)
     for (std::function<void()>& fn : m_deferred) fn();
     m_deferred.clear();
@@ -543,6 +556,26 @@ Pillar& GameplayScene::spawnPillar(ResouceManager& rm, const std::string& tex,
     m_livePtrs.push_back(up.get());
     return *up;
 }
+
+void GameplayScene::resetAll()
+{
+    m_playerDead = false;
+    m_restarTimer = -1.f;
+
+    // Restauro al player (pos, vel, animacion idle, flags, filamentos)
+    //m_player.setPosition()
+    m_player.play(AnimId::Idle, true, false);
+
+    m_livePtrs.clear();
+    m_orbViews.clear();
+
+    // Reset bullets/orbes/pilares
+    m_bullets.clear();
+    for (std::unique_ptr<Orb>& o : m_orbs) o.reset();
+    for (std::unique_ptr<Pillar>& p : m_pillars) p.reset();
+    
+}
+
 
 
 

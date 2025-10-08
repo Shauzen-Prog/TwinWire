@@ -59,6 +59,9 @@ public:
     void setSpeed(float s) { m_speed = s; }
     float speed() const { return m_speed; }
 
+    std::unordered_map<AnimId, std::vector<FrameMeta>> m_frames; // cache
+    void lockMovement(float seconds, float slowFactor = 0.f);
+
 private:
     ResouceManager& m_rm;
     ResouceManager::TexturePtr m_sheet;   // spritesheet completo
@@ -67,17 +70,26 @@ private:
     
     bool m_prevLeft{false};
     bool m_prevRight{false};
+
+    sf::Vector2f m_spawnPos { 160.f, 160.f};
     
     float m_visualScale { 1.f };
     sf::Sprite m_sprite;
     SpriteAnimator m_anim;
 
     // Transform / movimiento
-    float m_speed { 220.f }; // px/s
+    
+    float m_speed { 200.f }; // px/s
     float m_velX { 0.f }; 
     sf::Vector2f m_pos { 200.f, 220.f };
     sf::Vector2f m_vel { 0.f, 0.f };
     bool m_facingRight { true };
+
+    // Movement gate
+    float m_moveLockTimer { 0.f}; // >0 significa bloqueado/relentizado
+    float m_moveSlowFactor {1.f}; // 0 = bloqueo total, 0.2 = 20% de velocidad, etc
+    
+    bool isMovementLocked() const { return m_moveLockTimer > 0.f; }
 
     // Anim cache para no re-setear lo mismo
     AnimId m_currentAnim { AnimId::Idle };
@@ -102,7 +114,5 @@ private:
     
     void updateFacingFromMouse(const sf::RenderWindow& window);
     void applyVisualTransform(); // position + scale (flip)
-
-    std::unordered_map<AnimId, std::vector<FrameMeta>> m_frames; // cache
     
 };

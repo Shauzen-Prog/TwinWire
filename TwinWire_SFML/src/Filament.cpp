@@ -214,18 +214,32 @@ void Filament::update(float dt) {
 
     // ---------- RETRACTING ----------
     if (m_retracting) {
-        // volver hacia la mano del disparo
+        // Base actual (mano actializada este frame)
+        const sf::Vector2f base = m_origin;
+
+        // Vector desde la punta cia la base actual
         const sf::Vector2f back = m_startOrigin - m_target;
-        const float dist  = std::max(vlen(back), 1e-5f);
-        const float step  = m_retractSpeed * dt;
+        const float dist = std::max(vlen(back), 1e-5f);
+        const float step = m_retractSpeed * dt;
 
         if (step >= dist) {
-            m_retracting = false;
-            m_target = m_startOrigin;
+            // Colapsar a la base original
+            m_target = base;
+
+            // Retraction = true. ahora base = m_origin
             refreshBeam();
-            m_cooldown = m_cooldownTime; // <- arranca CD aca
+
+            // Asegurar tamaño 0 por si cambia future refreshBeam
+            m_beam.setSize({0.f, m_beam.getSize().y});
+
+            // Recien ahora cierra el ciclo y setea el cooldown (se rompia con el movimiento)
+            m_retracting = false;
+            m_cooldown   = m_cooldownTime;
+
+            // aseguro colapso visual completo
+            m_beam.setSize({0.f, m_beam.getSize().y});
         } else {
-            m_target += (back / dist) * step;
+            m_target += (back / dist) * step; // avanzar hacia la base actual
             refreshBeam();
         }
     }
@@ -260,7 +274,7 @@ void Filament::forceRetract()
 void Filament::refreshBeam()
 {
     // usar el origen del disparo mientras extiende/retrae
-    const sf::Vector2f base = (m_extending || m_retracting) ? m_startOrigin : m_origin;
+    const sf::Vector2f base = m_extending ? m_startOrigin : m_origin;
     const sf::Vector2f d = m_target - base;
     const float L = vlen(d);
 

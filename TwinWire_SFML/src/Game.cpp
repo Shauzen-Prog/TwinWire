@@ -3,6 +3,7 @@
 
 #include "MainMenuScene.h"
 #include "GameplayScene.h"
+#include "WinScene.h"
 
 Game::Game()  { initialize(); }
 Game::~Game() { deinitialize(); }
@@ -52,6 +53,17 @@ void Game::registerScenes()
     m_scenes.emplace(SceneId::MainMenu, std::make_unique<MainMenuScene>());
     
     m_scenes.emplace(SceneId::Gameplay, std::make_unique<GameplayScene>("../Assets/Sprites/Player/PlayerSpriteSheet.png"));
+
+    m_scenes.emplace(SceneId::WinScene, std::make_unique<WinScene>());
+}
+
+void Game::reloadCurrentScene()
+{
+    if (!m_current) return;
+    auto it = m_scenes.find(*m_current);
+    if (it == m_scenes.end() || !it->second) return;
+    it->second->onExit(*this);
+    it->second->onEnter(*this);
 }
 
 void Game::Play()
