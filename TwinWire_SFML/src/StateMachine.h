@@ -22,7 +22,7 @@ public:
 
     explicit StateMachine(TOwner& owner) : m_owner(owner) {}
 
-    void registerState(TState s, Callbacks cbs)
+    void addState(TState s, Callbacks cbs)
     {
         m_table[s] = std::move(cbs);
     }

@@ -17,7 +17,7 @@ void BulletEmitter::emit(sf::Vector2f pos, float angleRad, float speed)
         b->pos = pos;
         b->vel = { std::cos(angleRad) * speed, std::sin(angleRad) * speed };
         b->radius  = 4.f;
-        b->maxLife = 2.0f;
+        b->maxLife = 10.0f;
 
         if (m_tex) {
             b->sprite = std::make_unique<sf::Sprite>(*m_tex);  // crear el sprite

@@ -5,6 +5,10 @@
 
 #include <SFML/Graphics.hpp>
 #include <optional>
+
+#include "Boss.h"
+#include "IOrb.h"
+
 #include "IChockeable.h"
 #include "IScene.h"
 #include "Pillar.h"
@@ -13,6 +17,7 @@
 #include "SpriteAnimator.h" // por FrameMeta (solo tipo)
 #include "BulletPool.h"
 #include "BulletEmitter.h"
+
 
 class Pillar;             // fwd
 struct IChokeQuery;       // fwd
@@ -38,9 +43,7 @@ private:
     ResouceManager::TexturePtr m_bgTex;
     std::unique_ptr<sf::Sprite> m_bgSprite;
     bool m_bgPixelPerfect = true;
-
     
-
     sf::FloatRect m_playerAABB{}; 
 
     std::vector<std::unique_ptr<Orb>> m_orbs; //lista de orbes
@@ -66,6 +69,9 @@ private:
     std::string m_sheetPath;
     ResouceManager m_res;        
     Player m_player;
+
+    std::unique_ptr<Boss> m_boss;
+    std::vector<IOrb*> m_orbViews;
 
 #ifdef _DEBUG
     

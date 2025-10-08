@@ -2,17 +2,21 @@
 #include <SFML/Graphics.hpp>
 #include "ResouceManager.h"
 #include <optional>
+#include "IOrb.h"
 
 class Boss; //fwd
 
-class Orb
+class Orb : public IOrb
 {
 public:
     Orb(ResouceManager& rm, const std::string& texturePath, sf::Vector2f worldPos, float scale);
 
     void setBoss(Boss* b) {m_boss = b;}
     void setActive(bool v) {m_active = v;}
-    bool isActive() const {return m_active;}
+
+    // IOrb
+    bool isActive() const override {return m_active;}
+    sf::Vector2f getPosition() const override {return center();}
     
     void update(float dt);
     void draw(sf::RenderTarget& rt) const;

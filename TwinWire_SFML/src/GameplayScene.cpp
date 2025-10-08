@@ -131,14 +131,15 @@ GameplayScene::GameplayScene(std::string sheetPath)
 
 void GameplayScene::onEnter(Game& game)
 {
-
     auto tex = m_res.getTexture("../Assets/Sprites/Player/PlayerSpriteSheet.png");
     if (tex) m_player.animator().setTexture(*tex);
 
+   
+    
     // Carga frames iniciales
     m_player.animator().setFrames(makeDie(), /*loop=*/true);
     
-    // Cargá pivots desde archivo si ya existe
+    // Carga pivots desde archivo si ya existe
     PivotDataIO_CSV::load(
         m_player.animator(),
         "../../../../res/Assets/Pivots/pivots.csv"
@@ -183,6 +184,65 @@ void GameplayScene::onEnter(Game& game)
 
     Orb& oLeft = spawnOrb(m_res, "../Assets/Sprites/Orb.png", {win.x * 0.2f, yOrbs}, 1.f);
     Orb& oRight = spawnOrb(m_res, "../Assets/Sprites/Orb.png", {win.x * 0.8f, yOrbs}, 1.f);
+
+    m_orbViews.clear();
+    m_orbViews.reserve(m_orbs.size());
+    for (std::unique_ptr<Orb>& up : m_orbs)
+    {
+        if (up)
+        {
+            m_orbViews.push_back(static_cast<IOrb*>(up.get())); // Orb* -> IOrb*
+        }
+    }
+
+    // Intancio al boss
+    
+    Boss::Params bp;
+    const float W = static_cast<float>(win.x);
+    const float H = static_cast<float>(win.y);
+
+    bp.patrolBounds = sf::FloatRect(
+        sf::Vector2f(W * 0.1f, 0.f),  
+        sf::Vector2f(W * 0.8f, 1.f)    
+    );
+    
+    bp.startPos= { W * 0.5f, H * 0.25f };
+    
+    bp.attackBlockMinP1 = 3.0f; bp.attackBlockMaxP1 = 5.0f;
+    bp.attackBlockMinP2 = 5.0f; bp.attackBlockMaxP2 = 7.0f;
+
+    bp.waveDurationMin = 0.6f;  bp.waveDurationMax = 1.2f;
+    bp.waveGapMin = 0.25f; bp.waveGapMax      = 0.6f;
+
+    // densidad de spokes
+    bp.ringMin = 24; bp.ringMax = 28;
+    bp.ringSpeedP1 = 400.f; bp.ringSpeedP2 = 600.f;
+
+    bp.toPlayerSpeedP1 = 500.f; bp.toPlayerSpeedP2 = 1000.f;
+    bp.toPlayerPulseMin = 0.18f; bp.toPlayerPulseMax = 0.28f;
+
+    // velocidad de las balas
+    bp.ringSpeedP2 = 350.f; 
+    
+    // intervalo entre anillos (lineas de puntos mas juntas o separadas)
+    bp.ringIntervalMin = 0.15f; bp.ringIntervalMax = 0.25f;
+    bp.gapWidthMinDeg = 35.f;  bp.gapWidthMaxDeg  = 45.f;
+
+    // cuanto se mueve el pasillo por ring (lento = mas jugable)
+    bp.gapStepMinDeg = 2.f;
+    bp.gapStepMaxDeg = 4.f;
+    
+    // spokes fijos 
+    bp.spinPerRingMinDeg = 0.f;
+    bp.spinPerRingMaxDeg = 0.f; 
+
+    m_boss = std::make_unique<Boss>(bp, m_emitter.get(), &m_orbViews);
+
+    Player* playerRaw = &m_player;
+    
+    m_boss->setPlayerPosProvider([playerRaw]() -> sf::Vector2f {
+        return playerRaw ? playerRaw->getPosition() : sf::Vector2f{};
+        });
     
     p1Left.setTargetOrb(&oLeft);
     p2Right.setTargetOrb(&oRight);
@@ -212,6 +272,8 @@ void GameplayScene::onEnter(Game& game)
     //Posicion inicial comoda
  
     m_player.setPosition({ win.x * 0.2f, win.y * 0.965f});
+
+
 }
 
 void GameplayScene::onExit(Game& game)
@@ -331,7 +393,8 @@ void GameplayScene::update(Game& game, float dt)
         if (o) o->update(dt);
     
     m_player.update(dt, game.Window()); //flip hacia le mouse
-   
+    if (m_boss) m_boss->update(dt);
+    
     if (playerHit) {
         // TODO: aplicar daño/feedback. Por ahora, log o flash.
         // player.takeDamage(1.f);
@@ -342,6 +405,7 @@ void GameplayScene::update(Game& game, float dt)
 
 void GameplayScene::draw(Game& game, sf::RenderTarget& target)
 {
+    
     
     if (m_bgSprite) target.draw(*m_bgSprite);
 
@@ -388,6 +452,7 @@ void GameplayScene::draw(Game& game, sf::RenderTarget& target)
 
     m_player.draw(target);
 
+    if (m_boss) target.draw(*m_boss);
         
 #ifdef _DEBUG
     sf::RectangleShape r;

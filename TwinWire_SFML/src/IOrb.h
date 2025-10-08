@@ -1,5 +1,4 @@
 #pragma once
-#include <SFML/System/Angle.inl>
 #include <SFML/System/Vector2.hpp>
 
 struct IOrb

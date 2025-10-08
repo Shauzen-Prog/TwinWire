@@ -10,7 +10,7 @@ struct Bullet
     sf::Vector2f vel{}; // px/s
     float radius{4.f};
     float life{0.f};
-    float maxLife{2.f}; // en segundos
+    float maxLife{20.f}; // en segundos
     
     std::unique_ptr<sf::Sprite> sprite;
 };

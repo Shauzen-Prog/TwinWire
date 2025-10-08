@@ -6,7 +6,8 @@ MainMenuScene::MainMenuScene()
     : m_font(res.getFont("../Assets/Fonts/PixelifySans-VariableFont_wght.ttf")),
     m_title(*m_font, "", 30)
 {
-    
+    // Creo la semilla del random
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 }
 
 void MainMenuScene::onEnter(Game& game)

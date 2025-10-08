@@ -47,6 +47,7 @@
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\GameplayScene.h" />
     <ClInclude Include="src\GeometryUtils.h" />
+    <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\IBulletEmitter.h" />
     <ClInclude Include="src\IChockeable.h" />
     <ClInclude Include="src\IChokeQuery.h" />

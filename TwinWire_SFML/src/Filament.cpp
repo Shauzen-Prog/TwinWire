@@ -12,7 +12,7 @@ Filament::Filament(float thickness)
     using S = FilamentState;
 
     // --- IDLE ---
-    m_state.registerState(S::Idle, {
+    m_state.addState(S::Idle, {
         /*enter*/  [=](Filament& f){
             f.m_beam.setSize({0.f, f.m_beam.getSize().y});
             f.m_attached      = false;
@@ -23,7 +23,7 @@ Filament::Filament(float thickness)
     });
 
     // --- EXTENDING: m_lockedOrigin -> m_lockedOrigin + dir*maxLen ---
-    m_state.registerState(S::Extending, {
+    m_state.addState(S::Extending, {
     /*enter*/  [=](Filament& /*f*/){ /* m_extendT=0; set por fireStraight */ },
     /*update*/ [](Filament& f, float dt)
     {
@@ -65,7 +65,7 @@ Filament::Filament(float thickness)
     });
 
     // --- ATTACHED: punta fija en attachPoint; origen sigue la mano (no lock) ---
-    m_state.registerState(S::Attached, {
+    m_state.addState(S::Attached, {
     /*enter*/  [](Filament& /*f*/){},
     /*update*/ [](Filament& f, float){
         f.m_target = f.m_attachPoint;
@@ -77,7 +77,7 @@ Filament::Filament(float thickness)
 
     // --- RETRACTING: desde la punta actual hacia la mano bloqueada ---
     using S = FilamentState;
-    m_state.registerState(S::Retracting, {
+    m_state.addState(S::Retracting, {
         /*enter*/  [](Filament& /*f*/){},
         /*update*/ [](Filament& f, float dt){
             // base fija mientras retrae
@@ -102,7 +102,7 @@ Filament::Filament(float thickness)
     });
 
     // --- COOLDOWN → IDLE ---
-    m_state.registerState(S::Cooldown, {
+    m_state.addState(S::Cooldown, {
      /*enter*/  [](Filament& f){
          f.m_beam.setSize({0.f, f.m_beam.getSize().y});
          f.m_cooldown = f.m_cooldownTime; // arranca aca el cdr
@@ -268,7 +268,7 @@ void Filament::refreshBeam()
     if (L <= 1e-4f) { m_beam.setSize({0.f, m_beam.getSize().y}); return; }
 
     const float ang = std::atan2(d.y, d.x);
-    m_beam.setRotation(sf::radians(ang)); // SFML 3: se puede usar radianes :)
+    m_beam.setRotation(sf::radians(ang)); // se puede usar radianes :)
     m_beam.setSize({ L, m_beam.getSize().y });
 }
 
