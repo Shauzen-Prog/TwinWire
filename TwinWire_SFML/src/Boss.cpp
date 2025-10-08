@@ -66,6 +66,12 @@ Boss::Boss(const Params& p, IBulletEmitter* emitter, const std::vector<IOrb*>* o
         nullptr,
         nullptr
     });
+    m_fsm.addState(State::Dead, {
+        [](Boss& b){ b.onEnterDead(); },
+            [](Boss& b, float dt){ b.onUpdateDead(dt); },
+        nullptr,
+        nullptr
+    });
     
     m_fsm.setInitial(State::Patrol);
     resetAttackCooldown();
@@ -73,6 +79,7 @@ Boss::Boss(const Params& p, IBulletEmitter* emitter, const std::vector<IOrb*>* o
 
 void Boss::update(float dt)
 {
+    if (m_isDead) { updateBodyVisual(); return;}
     m_fsm.update(dt);
     updateBodyVisual();
 }
@@ -221,6 +228,14 @@ void Boss::onUpdateAbsorb(float dt)
     if (!m_currentOrb || !m_currentOrb->isActive())
     {
         // Si el orbe es destruido mientras "absorbe" -> aplica daño y cambia de fase
+        ++m_hitsTaken;
+        if (m_hitsTaken >= m_hitsToKill)
+        {
+            // Si se acercan mas de 3 veces al orbe, se considera muerto
+            m_fsm.change(State::Dead);
+            return;
+        }
+        // primer golpe pasa a P2 y hace Hurt
         phaseChange();
         m_fsm.change(State::Hurt);
         return;
@@ -249,6 +264,20 @@ void Boss::onUpdateHurt(float dt)
 {
     resetAttackCooldown();
     m_fsm.change(State::Patrol);
+}
+
+void Boss::onEnterDead()
+{
+    m_isDead = true;
+    m_beam.setSize({0.f, 4.f});
+    m_body.setFillColor(sf::Color(60, 60, 60));
+    if (m_onDeath) m_onDeath();
+}
+
+void Boss::onUpdateDead(float dt)
+{
+    // nada de momento
+    // aca va animacion de muerte seguramente
 }
 
 bool Boss::hasActiveOrbs() const
@@ -293,7 +322,7 @@ void Boss::selectClosestActiveOrb()
 void Boss::phaseChange()
 {
     // P1 -> P2 no se si lo agrando a fase 3, veremos
-    m_phase = Phase::P2;
+    if (m_phase == Phase::P1) m_phase = Phase::P2;
 }
 
 void Boss::resetAttackCooldown()

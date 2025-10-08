@@ -77,8 +77,9 @@ public:
     void setPlayerPosProvider(std::function<sf::Vector2f()> provider) { m_getPlayerPos = std::move(provider); }
 
     // Helper publico
-    //bool isDead() const { return m_fsm.; }
-
+    bool isDead() const { return m_isDead; } 
+    void setOnDeath(std::function<void()> cb) {m_onDeath = std::move(cb); }
+    
 private:
 
     using FSM = StateMachine<State, Boss>; // Le doy el onwner al boss
@@ -91,6 +92,8 @@ private:
     void onUpdateSeekOrb(float dt);
     void onEnterAbsorb();               void onUpdateAbsorb(float dt);
     void onEnterHurt();                 void onUpdateHurt(float dt);
+    void onEnterDead();
+    void onUpdateDead(float dt);
 
     // ---- Waves & Patterns ----
     enum class WavePattern { RingOnce, ToPlayerPulse, RingLoopGap }; // expandible por si quiero meter mas en un futuro
@@ -138,9 +141,13 @@ private:
     Params m_cfg;
     IBulletEmitter* m_emitter { nullptr };
     const std::vector<IOrb*>* m_orbs { nullptr };
-    std::function<sf::Vector2f()> m_getPlayerPos; 
-
+    std::function<sf::Vector2f()> m_getPlayerPos;
+    
     Phase m_phase { Phase::P1 };
+
+    // Helper si muere
+    bool m_isDead{false};
+    std::function<void()> m_onDeath;
 
     //Movement / pos
     sf::Vector2f m_position{};

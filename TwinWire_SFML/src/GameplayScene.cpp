@@ -238,11 +238,29 @@ void GameplayScene::onEnter(Game& game)
 
     m_boss = std::make_unique<Boss>(bp, m_emitter.get(), &m_orbViews);
 
+    m_boss->setOnDeath([this]() {
+     // Deferimos la reacción a fin de frame (evitar destruir cosas en medio del update del boss)
+     m_deferred.push_back([this]() {
+         // reacción a la muerte:
+         // - parar/limpiar proyectiles
+         // - reproducir SFX/anim
+
+         // Remover el boss del juego 
+         m_boss.reset();
+
+         // limpiar balas del emisor: Extender API no tiene todavia clearAll()
+         // if (m_emitter) m_emitter->clearAll(); // o como se llame
+
+         // Puedo llamar un evento Win();
+         // Win();
+        });
+    });
+
     Player* playerRaw = &m_player;
     
     m_boss->setPlayerPosProvider([playerRaw]() -> sf::Vector2f {
-        return playerRaw ? playerRaw->getPosition() : sf::Vector2f{};
-        });
+     return playerRaw ? playerRaw->getPosition() /*o center()*/ : sf::Vector2f{};
+    });
     
     p1Left.setTargetOrb(&oLeft);
     p2Right.setTargetOrb(&oRight);
@@ -400,7 +418,10 @@ void GameplayScene::update(Game& game, float dt)
         // player.takeDamage(1.f);
         // m_screenFlash.trigger();
     }
-    
+
+    // No es estar checkeando, solo ejecuta si hay tarea pendiente (cuando el boss llama al callback)
+    for (std::function<void()>& fn : m_deferred) fn();
+    m_deferred.clear();
 }
 
 void GameplayScene::draw(Game& game, sf::RenderTarget& target)

@@ -35,6 +35,7 @@ public:
     void update(Game& game, float dt) override;
     void draw(Game& game, sf::RenderTarget& rt) override;
     void rebuildBackgroundForWindow(const sf::RenderWindow& window);
+    std::vector<std::function<void()>> m_deferred; // tareas para ejecutar post-update
     
 private:
     // --- Background ---
