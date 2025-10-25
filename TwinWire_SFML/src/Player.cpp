@@ -67,14 +67,14 @@ static std::vector<FrameMeta> walking()
 static std::vector<FrameMeta> idle()
 {
     return {
-        /* Idle[1/8] */F(0,128,19,32,9.f),
-        /* Idle[2/8] */F(19,128,19,32,9.f),
-        /* Idle[3/8] */F(38,128,20,32,9.f),
-        /* Idle[4/8] */F(58,128,20,32,9.f),
-        /* Idle[5/8] */F(78,128,22,32,9.f),
-        /* Idle[6/8] */F(100,128,22,32,9.f),
-        /* Idle[7/8] */F(122,128,21,32,9.f),
-        /* Idle[8/8] */F(143,128,19,32,9.f)
+        /* Idle[1/8] */F(0,128,19,32,7.f),
+        /* Idle[2/8] */F(19,128,19,32,7.f),
+        /* Idle[3/8] */F(38,128,20,32,7.f),
+        /* Idle[4/8] */F(58,128,20,32,7.f),
+        /* Idle[5/8] */F(78,128,22,32,7.f),
+        /* Idle[6/8] */F(100,128,22,32,7.f),
+        /* Idle[7/8] */F(122,128,21,32,7.f),
+        /* Idle[8/8] */F(143,128,19,32,7.f)
     };
 }
 
@@ -112,7 +112,7 @@ Player::Player(ResouceManager& rm, const std::string& sheetPath)
     m_filA.setRetractSpeed(1600.f);
     m_filA.setLockOriginOnExtend(true);
 
-    m_filB.setMaxLength(280.f);
+    m_filB.setMaxLength(290.f);
     m_filB.setExtendSpeed(1200.f);
     m_filB.setRetractSpeed(1600.f);
     m_filB.setLockOriginOnExtend(true);
@@ -129,16 +129,19 @@ Player::Player(ResouceManager& rm, const std::string& sheetPath)
     m_frames[AnimId::Idle]      = idle();
     m_frames[AnimId::Die]       = die();
 
+    m_anim.setPivotOffset(m_tuning.pivotOffset);
+    setVisualScale(m_tuning.visualScale);
     // inicia con uno de default
     play(AnimId::Idle, /*loop=*/true);
 }
+
 
 void Player::play(AnimId id, bool loop, bool holdLast) {
     // Aseguro textura y sale de cualquier pausa previa
     m_anim.setTexture(*m_sheet);
     m_anim.setPaused(false);
 
-    const auto& seq = m_frames[id];
+    const std::vector<FrameMeta>& seq = m_frames[id];
     
     if (!loop && holdLast)
     {
@@ -163,6 +166,26 @@ void Player::playLoopLastFrame(AnimId id)
     m_anim.setHoldOnEnd(false);
     m_anim.loopLastFrame(true);
     m_anim.setFrames(m_frames[id], false);
+}
+
+// --- Sockets ---
+
+sf::Vector2f Player::handSocketLocal(Hand h) const {
+    return (h == Hand::Right) ? m_tuning.socketRightLocal
+                              : m_tuning.socketLeftLocal;
+}
+
+void Player::setHandSocketLocal(Hand h, sf::Vector2f p) {
+    if (h == Hand::Right) m_tuning.socketRightLocal = p;
+    else                  m_tuning.socketLeftLocal  = p;
+}
+
+void Player::adjustHandSocket(Hand h, sf::Vector2f d) {
+    setHandSocketLocal(h, handSocketLocal(h) + d);
+}
+
+sf::Vector2f Player::handSocketWorld(Hand h) const {
+    return m_anim.sprite().getTransform().transformPoint(handSocketLocal(h));
 }
 
 // ---------------------------------------
@@ -216,6 +239,28 @@ void Player::updateFacingFromVelocity()
     if (m_velX < 0.f && s.x > 0.f)  m_sprite.setScale({ -s.x, s.y });
 }
 
+
+void Player::setTuning(const Tuning& t) {
+    m_tuning = t;
+    m_anim.setPivotOffset(m_tuning.pivotOffset);
+    setVisualScale(m_tuning.visualScale);
+}
+
+sf::Vector2f Player::getFeetWorld() const {
+    // Por convención: origen del sprite = “pies”
+    return m_anim.sprite().getPosition();
+}
+
+sf::FloatRect Player::aabb() const {
+    // Misma fórmula en todos lados, basada en pies (pivot)
+    const sf::Vector2f feet = getFeetWorld();
+    const sf::Vector2f origin{
+        feet.x - m_tuning.hbSize.x * 0.5f + m_tuning.hbOffset.x,
+        feet.y - m_tuning.hbSize.y         + m_tuning.hbOffset.y
+    };
+    return sf::FloatRect(origin, m_tuning.hbSize);
+}
+
 void Player::update(float dt, const sf::RenderWindow& window)
 {
     // Tick del timer ANTES de leer input
@@ -226,6 +271,12 @@ void Player::update(float dt, const sf::RenderWindow& window)
             m_moveSlowFactor = 1.f; // restaurar velocidad normal
         }
     }
+
+    const bool A_wasExt      = m_filA.isExtending();
+    const bool A_wasAttached = m_filA.isAttached();
+    const bool B_wasExt      = m_filB.isExtending();
+    const bool B_wasAttached = m_filB.isAttached();
+
 
     m_anim.update(dt);
     // Lee input (solo X por ahora)
@@ -261,10 +312,10 @@ void Player::update(float dt, const sf::RenderWindow& window)
     // --- tecla R: recall de emergencia ---
     const bool recallDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R);
     if (!m_prevRecall && recallDown) {
-        // Gate suave para que no se pise con el walking
-        lockMovement(0.10f, 0.2f);
+        // soft gate para que no se pise con el walking
+        lockMovement(0.5f, 1.f);
 
-        // Release segun qué mano este activa
+        // Release segun que mano este activa
         const bool A_active = m_filA.isExtending() || m_filA.isRetracting() || m_filA.isAttached();
         const bool B_active = m_filB.isExtending() || m_filB.isRetracting() || m_filB.isAttached();
 
@@ -282,71 +333,28 @@ void Player::update(float dt, const sf::RenderWindow& window)
     }
     m_prevRecall = recallDown;
     
-    // --- Mouse (world)
-    const sf::Vector2i mpPix   = sf::Mouse::getPosition(window);
-    const sf::Vector2f mpWorld = window.mapPixelToCoords(mpPix);
-
-    // --- Botones 
-    const bool left  = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
-    const bool right = sf::Mouse::isButtonPressed(sf::Mouse::Button::Right);
-    
-    // Bordes
-    const bool edgeL = (!m_prevLeft  && left);
-    const bool edgeR = (!m_prevRight && right);
-
-    // Estado de cada hilo
-    const bool A_free = m_filA.canFire(); // no animando, sin cooldown, no attached
-    const bool B_free = m_filB.canFire();
-    const bool A_attached = m_filA.isAttached();
-
-    // Si hubo click (izq o der), orientarse hacia ese lado
-    if (edgeL || edgeR) {
-        const float handX = getHandSocketWorld().x;
-        m_facingRight = (mpWorld.x >= handX);
-        applyVisualTransform(); // actualizp el flip antes de disparar
-    }
-
-    // Reglas:
-    // - Exclusividad normal: solo dispara si ambos estan libres
-    // - EXCEPCION: si A esta Attached, permite disparar B (aunque A no este "free")
-    // - Si se presionan ambos a la vez:
-    //     * Si A esta Attached ⇒ disparamos B
-    //     * Si no ⇒ prioridad izquierda
-    if (edgeL && edgeR) {
-        if (A_attached && B_free) {
-            lockMovement(0.12f, 0.0f); // snap corto
-            playLoopLastFrame(AnimId::RHSustain);      // mano derecha (B)
-            m_filB.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/true);
-        } else if (A_free && B_free) {
-            lockMovement(0.12f, 0.0f);
-            playLoopLastFrame(AnimId::LHSustain);      // mano izquierda (A)
-            m_filA.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/true);
-        }
-    } else if (edgeL) {
-        if (A_free && B_free) {
-            lockMovement(0.12f, 0.0f);
-            playLoopLastFrame(AnimId::LHSustain);
-            m_filA.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/true);
-        }
-    } else if (edgeR) {
-        if (B_free && (A_free || A_attached)) {
-            const bool canAttachB = A_attached;
-            lockMovement(0.12f, 0.0f);
-            playLoopLastFrame(AnimId::RHSustain);
-            m_filB.fireStraight(getHandSocketWorld(), mpWorld, /*canAttach=*/canAttachB);
-        }
-    }
-
-    m_prevLeft  = left;
-    m_prevRight = right;
-
     m_filA.setColor(sf::Color::Cyan);
     
     // Origen y actualizacion por frame
-    m_filA.updateOrigin(getHandSocketWorld());
-    m_filB.updateOrigin(getHandSocketWorld());
+    m_filA.updateOrigin(handSocketWorld(Hand::Right)); // A = Right
+    m_filB.updateOrigin(handSocketWorld(Hand::Left));  // B = Left
     m_filA.update(dt);
     m_filB.update(dt);
+
+    // --- detectar "miss" si falló y empieza a retraerse ---
+    const bool A_missEdge = (A_wasExt && !A_wasAttached) && (m_filA.isRetracting() && !m_filA.isAttached());
+    const bool B_missEdge = (B_wasExt && !B_wasAttached) && (m_filB.isRetracting() && !m_filB.isAttached());
+
+    if (A_missEdge) 
+    {
+        Player_playReleaseForHand(*this, Hand::Right);
+        lockMovement(0.f, 0.f);
+    }
+    if (B_missEdge)
+    {
+        Player_playReleaseForHand(*this, Hand::Left);
+        lockMovement(0.f, 0.f);
+    }
     
     if (m_filA.isAttached() && m_filB.isAttached()) {
         IChockeable* aobj = m_filA.attachedObject();
@@ -355,6 +363,8 @@ void Player::update(float dt, const sf::RenderWindow& window)
             aobj->onChoke(m_filA.attachPoint(), m_filB.attachPoint()); // el pilar se “apaga”
             m_filA.forceRetract();
             m_filB.forceRetract();
+            Player_playReleaseForHand(*this, Hand::Left);
+            Player_playReleaseForHand(*this, Hand::Right);
         }
     }
 }
@@ -368,6 +378,68 @@ void Player::draw(sf::RenderTarget& target) const
     target.draw(m_sprite);
 }
 
+void Player::handleEvent(const sf::Event& ev, const sf::RenderWindow& window)
+{
+    // Clicks por evento (edge limpio)
+    if (const auto* mb = ev.getIf<sf::Event::MouseButtonPressed>())
+    {
+        // Target en mundo
+        const sf::Vector2i mpPix   = sf::Mouse::getPosition(window);
+        const sf::Vector2f mpWorld = window.mapPixelToCoords(mpPix);
+
+        // Al presionar, oriento hacia el lado del click antes de disparar
+        // (según x del socket derecho, pero podrías usar el centro del sprite si preferís)
+        const float handX = handSocketWorld(Hand::Right).x;
+        m_facingRight = (mpWorld.x >= handX);
+        applyVisualTransform();
+
+        // Estado actual de los filamentos
+        const bool A_free     = m_filA.canFire();
+        const bool B_free     = m_filB.canFire();
+        const bool A_attached = m_filA.isAttached();
+
+        switch (mb->button) {
+        case sf::Mouse::Button::Left: {
+                // LMB → Filament A (Right hand)
+                if (A_free && B_free) {
+                    lockMovement(0.12f, 0.0f);
+                    playLoopLastFrame(AnimId::LHSustain); // anim de mano izquierda (tu set actual)
+                    m_filA.fireStraight(handSocketWorld(Hand::Right), mpWorld, /*canAttach=*/true);
+                }
+                break;
+        }
+        case sf::Mouse::Button::Right: {
+                // RMB → Filament B (Left hand)
+                if (B_free && (A_free || A_attached)) {
+                    lockMovement(0.12f, 0.0f);
+                    playLoopLastFrame(AnimId::RHSustain); // anim de mano derecha (tu set actual)
+                    const bool canAttachB = A_attached; // si A ya está agarrado, B puede enganchar
+                    m_filB.fireStraight(handSocketWorld(Hand::Left), mpWorld, canAttachB);
+                }
+                break;
+        }
+        default: break;
+        }
+    }
+
+    // Recall con R (por evento en vez de polling)
+    if (const auto* kp = ev.getIf<sf::Event::KeyPressed>()) {
+        if (kp->code == sf::Keyboard::Key::R) {
+            lockMovement(0.10f, 0.2f);
+
+            const bool A_active = m_filA.isExtending() || m_filA.isRetracting() || m_filA.isAttached();
+            const bool B_active = m_filB.isExtending() || m_filB.isRetracting() || m_filB.isAttached();
+
+            if      (A_active && !B_active) play(AnimId::LHRelease, /*loop=*/false, /*holdLast=*/true);
+            else if (B_active && !A_active) play(AnimId::RHRelease, /*loop=*/false, /*holdLast=*/true);
+            else                             play(AnimId::LHRelease, /*loop=*/false, /*holdLast=*/true);
+
+            m_filA.forceRetract();
+            m_filB.forceRetract();
+        }
+    }
+}
+
 void Player::setPosition(sf::Vector2f p)
 {
     m_pos = p;
@@ -379,20 +451,10 @@ sf::Vector2f Player::getPosition() const
     return m_pos;
 }
 
-void Player::setHandSocketLocal(sf::Vector2f local)
-{
-    m_handSocketLocal = local;
-}
 
-sf::Vector2f Player::getHandSocketWorld() const
+sf::Vector2f Player::computeShootDirToMouse(const sf::RenderWindow& window, Hand h) const
 {
-    // Usa el transform completo del sprite (posición, escala/flip, origen por frame)
-    return m_sprite.getTransform().transformPoint(m_handSocketLocal);
-}
-
-sf::Vector2f Player::computeShootDirToMouse(const sf::RenderWindow& window) const
-{
-    const sf::Vector2f origin = getHandSocketWorld();
+    const sf::Vector2f origin = handSocketWorld(h);
     const sf::Vector2i mpPix  = sf::Mouse::getPosition(window);
     const sf::Vector2f target = window.mapPixelToCoords(mpPix); 
 
@@ -403,10 +465,17 @@ sf::Vector2f Player::computeShootDirToMouse(const sf::RenderWindow& window) cons
     return d * inv;
 }
 
+void Player::Player_playReleaseForHand(Player& self, Hand h)
+{
+    if (h == Hand::Right) self.play(AnimId::RHRelease, /*loop=*/false, /*holdLast=*/true);
+    else                  self.play(AnimId::LHRelease, /*loop=*/false, /*holdLast=*/true);
+}
+
 void Player::setVisualScale(float s) {
+    m_tuning.visualScale = s;
     m_visualScale = s;
     applyVisualTransform();
-    // aplica inmediatamente respetando el flip
+    
     const float sx = m_facingRight ? 1.f : -1.f;
     m_sprite.setScale({ sx * m_visualScale, m_visualScale });
 }
@@ -431,6 +500,20 @@ void Player::setChokeQuery(IChokeQuery* q)
         m_filB.setRaycast(ray);
     else
         m_filB.setRaycast(nullptr);
+}
+
+void Player::setHitboxSize(sf::Vector2f s) {
+    m_tuning.hbSize.x = std::max(2.f, s.x);
+    m_tuning.hbSize.y = std::max(2.f, s.y);
+}
+void Player::setHitboxOffset(sf::Vector2f o) {
+    m_tuning.hbOffset = o;
+}
+void Player::adjustHitboxSize(sf::Vector2f d) {
+    setHitboxSize(m_tuning.hbSize + d);
+}
+void Player::adjustHitboxOffset(sf::Vector2f d) {
+    setHitboxOffset(m_tuning.hbOffset + d);
 }
 
 void Player::applyVisualTransform()

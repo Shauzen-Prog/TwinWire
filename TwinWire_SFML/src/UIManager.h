@@ -11,7 +11,7 @@ public:
     ~UIManager() = default;
 
     // Deleteo copia y lo dejo en noexcept para que se pueda tranferir propiedad sin copiar
-    // Esto por que como tiene un unique_ptr no pueden tener 2 lo mismo, que es lo que hacia que se me rompa
+    // Esto porque como tiene un unique_ptr no pueden tener 2 lo mismo, que es lo que hacia que se me rompa
     UIManager(const UIManager&) = delete; // no copiable
     UIManager& operator=(const UIManager&) = delete; // no copiable
     

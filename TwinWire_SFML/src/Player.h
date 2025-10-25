@@ -12,31 +12,68 @@ enum class AnimId { Idle, Walk, LHSustain, LHRelease, RHSustain, RHRelease, Die 
 class Player
 {
 public:
+    enum Hand { Left, Right };
+    
+    struct Tuning {
+        sf::Vector2f pivotOffset   { 8.f, 0.f };   // “pies” global (X,Y)
+        float visualScale   = 2.2f;         // escala del sprite
+        sf::Vector2f hbSize        {10.f, 22.f};   // AABB size
+        sf::Vector2f hbOffset      { 1.f, -9.f };   // AABB offset (desde pies)
+
+        sf::Vector2f socketRightLocal { 31.f, 19.f };
+        sf::Vector2f socketLeftLocal  { 26.f,20.f };
+    };
+
+    
     explicit Player(ResouceManager& rm, const std::string& sheetPath);
     
     // Setea los frames (rect + pivotX por frame). 
     void setFrames(const std::vector<FrameMeta>& frames, bool loop = true);
 
     // Loop básico
+    void handleEvent(const sf::Event& ev, const sf::RenderWindow& window);
     void handleInput();                                       // A/D → velocidad X
     void update(float dt, const sf::RenderWindow& window);    // anim + mirar mouse
     void draw(sf::RenderTarget& target) const;
 
-    // Posición
-    void setPosition(sf::Vector2f p);
-    sf::Vector2f getPosition() const;
-
-    // “Socket” de la mano (local al pivot). 
-    void setHandSocketLocal(sf::Vector2f local);
-    sf::Vector2f getHandSocketWorld() const;  // origen mundial para el filamento
-
-    // Dirección normalizada hacia el mouse (mundo)
-    sf::Vector2f computeShootDirToMouse(const sf::RenderWindow& window) const;
-    
-    // Facing
+    // Lecturas
+    sf::Vector2f getFeetWorld() const;
+    sf::FloatRect aabb() const;
     bool isFacingRight() const { return m_facingRight; }
 
+    // Animator
+    const SpriteAnimator& animator() const { return m_anim; }
+    SpriteAnimator& animator() { return m_anim; }
+
+    // Posición
+    
+    sf::Vector2f getPosition() const;
+
+    // Sockets
+    sf::Vector2f handSocketLocal(Hand h) const;
+    void setHandSocketLocal(Hand h, sf::Vector2f p);
+    void adjustHandSocket(Hand h, sf::Vector2f d);
+    sf::Vector2f handSocketWorld(Hand h) const;
+
+    // Tuning Fijo
+    const Tuning& tuning() const { return m_tuning; }
+
+    // API visual
+    void setPosition(sf::Vector2f p);
     void setVisualScale(float s);
+
+    // Dirección normalizada hacia el mouse (mundo)
+    sf::Vector2f computeShootDirToMouse(const sf::RenderWindow& window, Hand h) const;
+    
+    inline void Player_playReleaseForHand(Player& self, Hand h);
+
+    // Hitbox getters/setters (runtime tuning)
+    sf::Vector2f hitboxSize()   const { return m_tuning.hbSize; }
+    sf::Vector2f hitboxOffset() const { return m_tuning.hbOffset; }
+    void setHitboxSize(sf::Vector2f s);
+    void setHitboxOffset(sf::Vector2f o);
+    void adjustHitboxSize(sf::Vector2f delta);
+    void adjustHitboxOffset(sf::Vector2f delta);
     
     // --- Filament API “wrapper” ---
     void startAiming();
@@ -46,12 +83,16 @@ public:
 
     void setChokeQuery(IChokeQuery* q);
 
-    sf::Vector2f getFeetWorld() const { return m_sprite.getPosition(); }
+    
+    void setTuning(const Tuning& t);
+    void setPivotOffset(sf::Vector2f p) { m_tuning.pivotOffset = p; m_anim.setPivotOffset(p); }
+
+
+   
 
     // Animacion Getter
-    SpriteAnimator& animator() { return m_anim; }
-    const SpriteAnimator& animator() const { return m_anim; }
-
+    
+    
     void play(AnimId id, bool loop = true, bool holdLast = false);
     void playLoopLastFrame(AnimId id);
 
@@ -61,10 +102,12 @@ public:
 
     std::unordered_map<AnimId, std::vector<FrameMeta>> m_frames; // cache
     void lockMovement(float seconds, float slowFactor = 0.f);
+   
 
 private:
     ResouceManager& m_rm;
     ResouceManager::TexturePtr m_sheet;   // spritesheet completo
+    Tuning m_tuning;
 
     bool m_prevRecall = false; 
     
@@ -96,10 +139,7 @@ private:
 
     void playIfChanged(AnimId id, bool loop, bool holdLast = false);
     void updateFacingFromVelocity();
-
-    // Socket local (respecto al pivot “talón”: X variable por frame, Y = base del rect)
-    sf::Vector2f m_handSocketLocal { 10.f, -22.f }; // ajustar a ojimetro
-
+    
     // --- Filament ---
     Filament m_filA{3.f};
     Filament m_filB{3.f};

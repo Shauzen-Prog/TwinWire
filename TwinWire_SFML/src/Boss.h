@@ -8,6 +8,7 @@
 
 #include "Helpers.h"
 #include "IOrb.h"
+#include "ResouceManager.h"
 #include "StateMachine.h"
 
 class IBulletEmitter; // forward
@@ -15,8 +16,17 @@ class IBulletEmitter; // forward
 class Boss final : public sf::Drawable
 {
 public:
-    enum Phase { P1, P2}; // fases
+    enum Phase { P1 = 1, P2 = 2, P3 = 3}; // fases
     enum State { Patrol, Pause, BulletHell, CheckOrb, SeekOrb, Absorb, Hurt, Dead };
+
+  
+
+    struct PhaseRects
+    {
+        sf::IntRect p1{};
+        sf::IntRect p2{};
+        sf::IntRect p3{};
+    };
 
     struct Params
     {
@@ -73,10 +83,50 @@ public:
         sf::Color beamColorP2 { 255,  80,  90, 255 }; // rojizo en P2
     };
 
-    Boss(const Params& p,
+    Boss(ResouceManager& rm,
+        const std::string& texturePath,
+        std::optional<sf::IntRect> rect,
+        sf::Vector2f worldPos,
+        float scale,
+        const Params& p,
         IBulletEmitter* emitter,
         const std::vector<IOrb*>* orbs); // Necesito saber si es nulleable por eso hago el <IOrb*>*
 
+    static std::unique_ptr<Boss> CreateDefault(
+      ResouceManager& rm,
+      sf::Vector2f worldPos,
+      float scale,
+      const Params& p,
+      IBulletEmitter* emitter,
+      const std::vector<IOrb*>* orbs);
+
+    // <summary>Datos visuales por fase: rect + pivote por fase</summary>
+    struct PhaseVisual {
+        sf::IntRect rect{};
+        float pivotX{0.f};       // en px del frame
+        float baseOffsetY{0.f};  // + baja la base virtual; - la sube
+    };
+    
+    struct VisualConfig {
+        std::string sheetPath;
+        PhaseRects rects;
+        PhaseVisual p1{};
+        PhaseVisual p2{};
+        PhaseVisual p3{};
+    };
+    static std::unique_ptr<Boss> Create(
+        ResouceManager& rm,
+        sf::Vector2f worldPos,
+        float scale,
+        const Params& p,
+        IBulletEmitter* emitter,
+        const std::vector<IOrb*>* orbs,
+        const VisualConfig& cfg);
+    
+    
+    void setSprite(ResouceManager& rm, const VisualConfig& cfg);
+    void startReload(float seconds);
+    
     void update(float dt);
     Phase phase() const { return m_phase; }
     sf::Vector2f getPosition() const { return m_position; }
@@ -86,10 +136,44 @@ public:
     // Helper publico
     bool isDead() const { return m_isDead; } 
     void setOnDeath(std::function<void()> cb) {m_onDeath = std::move(cb); }
+    void setOnHurt(std::function<void(int)> cb) { m_onHurt = std::move(cb); }
+    void setPhase(int p); 
+    void setPhase(Phase ph);
+    void onDamage(int amount);
     
 private:
 
     using FSM = StateMachine<State, Boss>; // Le doy el onwner al boss
+
+    // --- Visual ---
+    ResouceManager& m_rm;
+    ResouceManager::TexturePtr m_tex;
+    sf::Sprite  m_sprite;
+    VisualConfig m_vcfg;
+    
+    bool m_hasSprite{false};
+    void applyRect();
+    void updateColorFX(float dt);
+
+    // Helpers visuales
+    void initVisual_(const std::string& texturePath,
+                     std::optional<sf::IntRect> rect,
+                     sf::Vector2f worldPos,
+                     float scale);
+    void setPhaseRects(const PhaseRects& pr);
+
+
+    PhaseRects m_rects{};
+    bool m_hasPhaseRects{false};
+
+    // Color FX
+    enum class FlashMode { None, DamageRed, ReloadViolet };
+    FlashMode m_flash{FlashMode::None};
+    float m_fxTime{0.f};
+    float m_fxDur{0.f};
+    
+    bool m_showDamaged{false};
+    float m_damagedTimer{0.f};
     
     // FSM callbacks
     void onEnterPatrol();               void onUpdatePatrol(float dt);
@@ -129,6 +213,18 @@ private:
     void emitRing(int count, float startAngleRad, float speed, bool useGap,
                   float gapCenterRad, float gapHalfRad);
     void emitToPlayerPulse(float speed); // usa WaveCtx.playerSnapshot y timeToNextPulse
+
+    // helpers
+    void updateVisual(float dt);
+    void applyPhaseRect(); // setea rect según fase y estado damaged o no
+    sf::Color lerp(const sf::Color& a, const sf::Color& b, float t) const;
+
+    // daño
+    bool m_recentlyDamaged{false};
+    float m_damageHoldTimer{0.f};
+    const float m_damageHoldTime = 0.20f; // durante este tiempo uso el rect "damaged"
+    
+    std::function<void(int)> m_onHurt; // notifico afuera
     
     // Helpers
     void selectClosestActiveOrb();
@@ -180,7 +276,7 @@ private:
 
     // Vida del boss
     int m_hitsTaken{0};
-    int m_hitsToKill{2}; // 2 golpes: 1 pasa a P2, 2 = muerte
+    int m_hitsToKill{3}; 
 
     WaveCtx m_wave{};         // estado por wave
     std::mt19937 m_rng{ std::random_device{}() }; // una manera de hacer random

@@ -17,6 +17,7 @@ Orb::Orb(ResouceManager& rm,
     m_sprite.setPosition(worldPos);
 }
 
+
 void Orb::update(float dt)
 {
     //cooldown para respawn
@@ -48,11 +49,6 @@ void Orb::breakOrb()
 
     m_active = false;
     m_respawnTimer = m_respawnTime;
-
-    // notificar al boss (realmente no debería conocer al boss, por acoplamiento pero bueno xdd)
-    if (m_boss) {
-        //m_boss->takeDamage(1.f); // le saca 1 de vida por orbe
-    }
 }
 
 sf::Vector2f Orb::getPosition() const

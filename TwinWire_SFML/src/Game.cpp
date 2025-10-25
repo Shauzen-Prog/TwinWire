@@ -1,8 +1,11 @@
 #include "Game.h"
+
+#include <fstream>
 #include <iostream>
 
 #include "MainMenuScene.h"
 #include "GameplayScene.h"
+#include "PlayerTunerScene.h"
 #include "WinScene.h"
 
 Game::Game()  { initialize(); }
@@ -11,6 +14,19 @@ Game::~Game() { deinitialize(); }
 void Game::initialize()
 {
     createWindow();
+    
+    // --- Persistencia simple a archivo local ---
+    m_sound.setSaveVolumesCallback([](float M, float Mu, float S){
+        std::ofstream f("audio.cfg");
+        if (f) f << M << " " << Mu << " " << S;
+    });
+    m_sound.setLoadVolumesCallback([](float& M, float& Mu, float& S)->bool{
+        std::ifstream f("audio.cfg");
+        if (!f) return false;
+        return (f >> M >> Mu >> S) ? true : false;
+    });
+    
+    m_sound.loadVolumes();
     registerScenes();
     //arranca en el menu
     SwitchTo(SceneId::MainMenu);
@@ -54,7 +70,10 @@ void Game::registerScenes()
     
     m_scenes.emplace(SceneId::Gameplay, std::make_unique<GameplayScene>("../Assets/Sprites/Player/PlayerSpriteSheet.png"));
 
-    m_scenes.emplace(SceneId::WinScene, std::make_unique<WinScene>());
+    m_scenes.emplace(SceneId::WinScene, std::make_unique<WinScene>(m_res));
+
+    m_scenes.emplace(SceneId::PlayerTuner, std::make_unique<PlayerTunerScene>("../Assets/Sprites/Player/PlayerSpriteSheet.png"));
+    
 }
 
 void Game::reloadCurrentScene()
@@ -106,6 +125,7 @@ void Game::handleInput()
 
 void Game::update(float dt)
 {
+    m_sound.update();
     if (!m_current) return;
     if (auto it = m_scenes.find(*m_current); it != m_scenes.end() && it->second)
         it->second->update(*this, dt);

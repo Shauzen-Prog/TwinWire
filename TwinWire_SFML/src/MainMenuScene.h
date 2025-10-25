@@ -2,6 +2,7 @@
 #include "IScene.h"
 #include "ResouceManager.h"
 #include "UIManager.h"
+#include "AudioOptionsPanel.h"
 
 class MainMenuScene : public IScene
 {
@@ -16,10 +17,18 @@ public:
     void draw(Game& game, sf::RenderTarget& rt) override;
 
 private:
-    ResouceManager res;
+    ResouceManager m_rm;
     
-    sf::Text m_title;
     ResouceManager::FontPtr m_font;
+    sf::Text m_title;
+    sf::FloatRect m_cullRect{};
+    sf::Text m_best; // <- "Mejor: AJX 3:42 M:2"
 
     UIManager m_ui;
+    
+    UIManager m_uiOptions;
+    bool m_showOptions{false};
+
+    // Audio options
+    std::unique_ptr<AudioOptionsPanel> m_audioPanel;
 };

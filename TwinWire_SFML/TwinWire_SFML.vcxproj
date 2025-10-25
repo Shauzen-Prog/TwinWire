@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\AudioOptionsPanel.cpp" />
     <ClCompile Include="src\Boss.cpp" />
     <ClCompile Include="src\BulletEmitter.cpp" />
     <ClCompile Include="src\BulletPool.cpp" />
@@ -26,20 +27,29 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\GameplayScene.cpp" />
     <ClCompile Include="src\GeometryUtils.cpp" />
+    <ClCompile Include="src\HighScore.cpp" />
+    <ClCompile Include="src\HUD.cpp" />
+    <ClCompile Include="src\linq.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MainMenuScene.cpp" />
     <ClCompile Include="src\Orb.cpp" />
     <ClCompile Include="src\PauseLayer.cpp" />
     <ClCompile Include="src\Pillar.cpp" />
-    <ClCompile Include="src\PivotDataIO_CSV.cpp" />
     <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\PlayerAABB.cpp" />
+    <ClCompile Include="src\PlayerTunerScene.cpp" />
     <ClCompile Include="src\ResouceManager.cpp" />
+    <ClCompile Include="src\RunStats.cpp" />
+    <ClCompile Include="src\SoundManager.cpp" />
     <ClCompile Include="src\SpriteAnimator.cpp" />
+    <ClCompile Include="src\StatsMath.cpp" />
     <ClCompile Include="src\UIButton.cpp" />
     <ClCompile Include="src\UIManager.cpp" />
+    <ClCompile Include="src\VolumeSlider.cpp" />
     <ClCompile Include="src\WinScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AudioOptionsPanel.h" />
     <ClInclude Include="src\Boss.h" />
     <ClInclude Include="src\Bullet.h" />
     <ClInclude Include="src\BulletEmitter.h" />
@@ -50,23 +60,31 @@
     <ClInclude Include="src\GameplayScene.h" />
     <ClInclude Include="src\GeometryUtils.h" />
     <ClInclude Include="src\Helpers.h" />
+    <ClInclude Include="src\HighScore.h" />
+    <ClInclude Include="src\HUD.h" />
     <ClInclude Include="src\IBulletEmitter.h" />
     <ClInclude Include="src\IChockeable.h" />
     <ClInclude Include="src\IChokeQuery.h" />
     <ClInclude Include="src\IOrb.h" />
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\IWidget.h" />
+    <ClInclude Include="src\linq.h" />
     <ClInclude Include="src\MainMenuScene.h" />
     <ClInclude Include="src\Orb.h" />
     <ClInclude Include="src\PauseLayer.h" />
     <ClInclude Include="src\Pillar.h" />
-    <ClInclude Include="src\PivotDataIO_CSV.h" />
     <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\PlayerAABB.h" />
+    <ClInclude Include="src\PlayerTunerScene.h" />
     <ClInclude Include="src\ResouceManager.h" />
+    <ClInclude Include="src\RunStats.h" />
+    <ClInclude Include="src\SoundManager.h" />
     <ClInclude Include="src\SpriteAnimator.h" />
     <ClInclude Include="src\StateMachine.h" />
+    <ClInclude Include="src\StatsMath.h" />
     <ClInclude Include="src\UIButton.h" />
     <ClInclude Include="src\UIManager.h" />
+    <ClInclude Include="src\VolumeSlider.h" />
     <ClInclude Include="src\WinScene.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

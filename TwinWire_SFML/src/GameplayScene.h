@@ -17,6 +17,7 @@
 #include "SpriteAnimator.h" // por FrameMeta (solo tipo)
 #include "BulletPool.h"
 #include "BulletEmitter.h"
+#include "HUD.h"
 #include "PauseLayer.h"
 
 
@@ -47,8 +48,10 @@ private:
     struct MultiPillarQuery;                       //fwd anidada
     std::unique_ptr<MultiPillarQuery> m_query;
     ResouceManager::TexturePtr m_bgTex;
+    ResouceManager::TexturePtr m_floorTex;
     ResouceManager::FontPtr m_uiFont;
     std::unique_ptr<sf::Sprite> m_bgSprite;
+    std::unique_ptr<sf::Sprite> m_floorSprite;
     bool m_bgPixelPerfect = true;
     
     sf::FloatRect m_playerAABB{};
@@ -82,6 +85,8 @@ private:
 
     std::unique_ptr<Boss> m_boss;
     std::vector<IOrb*> m_orbViews;
+
+    std::unique_ptr<HUD> m_hud; // <- overlay de Time/Deaths
 
 #ifdef _DEBUG
     

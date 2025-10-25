@@ -57,6 +57,9 @@ public:
     // Getter de pausa
     bool isPaused() const { return m_paused; }
 
+    void setPivotOffset(sf::Vector2f off) { m_pivotOffset = off; }
+    sf::Vector2f pivotOffset() const { return m_pivotOffset; }
+
 private:
     
     sf::Sprite& m_sprite;
@@ -67,6 +70,7 @@ private:
     float m_time    = 0.f;
     bool  m_loop    = true;
     bool  m_paused  = false;
+    sf::Vector2f m_pivotOffset {0.f, 0.f};
     
     void applyCurrentFrameInternal();
 };

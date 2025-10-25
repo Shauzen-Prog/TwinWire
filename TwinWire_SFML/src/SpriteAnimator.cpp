@@ -80,7 +80,10 @@ void SpriteAnimator::applyCurrentFrameInternal()
     const sf::IntRect& rect = frame.rect;
     m_sprite.setTextureRect(rect);
     // pivotX = pixeles desde left; pivotY = base del rect
-    m_sprite.setOrigin({frame.pivotX, static_cast<float>(rect.size.y) });
+    m_sprite.setOrigin({
+       frame.pivotX + m_pivotOffset.x,
+       static_cast<float>(rect.size.y) + m_pivotOffset.y
+   });
 }
 
 void SpriteAnimator::applyCurrentFrame()
