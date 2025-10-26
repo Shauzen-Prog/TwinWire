@@ -12,8 +12,8 @@ public:
     explicit AudioOptionsPanel(SoundManager& sm, ResouceManager& rm, const std::string& fontPath);
     
     void setOriginAndWidth(sf::Vector2f topLeft, float width);
-    void setFeedbackSfx(const std::string& path) { m_feedbackSfx = path; }
-    
+    void set_feedback_sfx(const std::string& path);
+
     void setCenterX(float cx, bool snap = true);
     void nudgeX(int dx);
     
@@ -42,6 +42,7 @@ private:
     sf::FloatRect m_rMaster{}, m_rSfx{}, m_rMusic{};
     std::string m_feedbackSfx;
     bool m_draggingSfx{false};
+    float m_lastSfxValue{-1.f};
 
     sf::Vector2f m_pos{};
     float m_width{360.f};

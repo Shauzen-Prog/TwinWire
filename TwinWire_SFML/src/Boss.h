@@ -5,13 +5,15 @@
 #include <optional>
 #include <functional>
 #include <random>
-
+#include "SoundManager.h" 
 #include "Helpers.h"
 #include "IOrb.h"
 #include "ResouceManager.h"
 #include "StateMachine.h"
 
 class IBulletEmitter; // forward
+class SoundManager;
+using PlaySfxFn = std::function<void(const std::string&, float, float)>;
 
 class Boss final : public sf::Drawable
 {
@@ -19,8 +21,16 @@ public:
     enum Phase { P1 = 1, P2 = 2, P3 = 3}; // fases
     enum State { Patrol, Pause, BulletHell, CheckOrb, SeekOrb, Absorb, Hurt, Dead };
 
-  
-
+    void setPlaySfx(PlaySfxFn fn) { m_playSfx = std::move(fn); }
+    
+    struct SfxConfig {
+        std::string straight;     // ataque recto (ToPlayerPulse)
+        std::string ring;         // ring (RingOnce / RingLoopGap)
+        std::string absorbStart;  // cuando empieza a absorber el orbe
+        std::string hurt;         // daño
+        float volume = 1.0f;      // multiplicador local 0..1
+    };
+    
     struct PhaseRects
     {
         sf::IntRect p1{};
@@ -122,10 +132,14 @@ public:
         IBulletEmitter* emitter,
         const std::vector<IOrb*>* orbs,
         const VisualConfig& cfg);
-    
+
+    using PlaySfxFn = std::function<void(const std::string&, float, float)>;
     
     void setSprite(ResouceManager& rm, const VisualConfig& cfg);
     void startReload(float seconds);
+
+    void setSoundManager(SoundManager* sm) { m_sound = sm; }
+    void setSfx(const SfxConfig& cfg) { m_sfx = cfg; }
     
     void update(float dt);
     Phase phase() const { return m_phase; }
@@ -155,6 +169,13 @@ private:
     void applyRect();
     void updateColorFX(float dt);
 
+    // Audio
+    SoundManager* m_sound { nullptr };
+    PlaySfxFn m_playSfx;
+    SfxConfig     m_sfx{};
+    void playSfx_(const std::string& path, float pitch = 1.f, float vol = 1.f);
+
+    
     // Helpers visuales
     void initVisual_(const std::string& texturePath,
                      std::optional<sf::IntRect> rect,

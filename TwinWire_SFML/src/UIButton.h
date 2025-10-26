@@ -3,7 +3,6 @@
 #include <functional>
 #include <string>
 
-// Simple rectangular button with a centered label
 class UIButton final : public IWidget
 {
 public:

@@ -1,5 +1,7 @@
 #include "AudioOptionsPanel.h"
 
+#include <iostream>
+
 AudioOptionsPanel::AudioOptionsPanel(SoundManager& sm, ResouceManager& rm, const std::string& fontPath)
 : m_sm(sm)
 , m_font(rm.getFont(fontPath))                                            
@@ -21,6 +23,9 @@ void AudioOptionsPanel::setOriginAndWidth(sf::Vector2f topLeft, float width)
     rebuildLayout();
 }
 
+void AudioOptionsPanel::set_feedback_sfx(const std::string& path)
+{ m_feedbackSfx = path; }
+
 void AudioOptionsPanel::setCenterX(float cx, bool snap)
 {
     float x = cx - (m_width * 0.5f);
@@ -38,7 +43,6 @@ void AudioOptionsPanel::nudgeX(int dx)
 void AudioOptionsPanel::setCenterY(float cy, bool snap)
 {
     float y = cy - /* altura virtual del bloque */ 0.f; 
-    // Nota: usamos m_pos.y como ancla del layout; no necesitamos la altura exacta.
     if (snap) y = std::round(y);
     m_pos.y = y;
     rebuildLayout();
@@ -120,7 +124,8 @@ void AudioOptionsPanel::handleEvent(const sf::Event& ev, const sf::RenderWindow&
         if (mp->button == sf::Mouse::Button::Left) {
             const sf::Vector2i pix = sf::Mouse::getPosition(window);
             const sf::Vector2f p   = window.mapPixelToCoords(pix);
-            m_draggingSfx = m_rSfx.contains(p);
+            m_draggingSfx  = m_rSfx.contains(p);
+            m_lastSfxValue = m_sfx.value(); // valor al empezar el drag
         }
     }
     
@@ -130,9 +135,11 @@ void AudioOptionsPanel::handleEvent(const sf::Event& ev, const sf::RenderWindow&
             m_sm.saveVolumes();
 
             if (m_draggingSfx && !m_feedbackSfx.empty()) {
-                m_sm.playSfx(m_feedbackSfx, 1.f, 0.8f);
+                if (std::abs(m_sfx.value() - m_lastSfxValue) > 0.01f) {
+                    m_sm.playSfx(m_feedbackSfx, 1.f, 0.85f);
+                }
             }
-            m_draggingSfx = false; 
+            m_draggingSfx = false;
         }
     }
 }

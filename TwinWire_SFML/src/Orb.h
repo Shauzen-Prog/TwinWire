@@ -3,6 +3,7 @@
 #include "ResouceManager.h"
 #include <optional>
 #include "IOrb.h"
+#include "SoundManager.h"
 
 class Boss; //fwd
 
@@ -10,7 +11,8 @@ class Orb : public IOrb
 {
 public:
     Orb(ResouceManager& rm, const std::string& texturePath, sf::Vector2f worldPos, float scale);
-
+    void setSoundManager(SoundManager* sm) { m_sound = sm; }
+    
     void setBoss(Boss* b) {m_boss = b;}
     void setActive(bool v) {m_active = v;}
 
@@ -30,6 +32,7 @@ public:
 private:
     ResouceManager& m_rm;
     ResouceManager::TexturePtr m_tex;
+    SoundManager* m_sound{ nullptr };
     sf::Sprite m_sprite;
     
     bool m_active{true};

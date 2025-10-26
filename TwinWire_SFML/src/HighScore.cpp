@@ -14,19 +14,35 @@ bool HighScore::load(const std::string& path, std::vector<ScoreEntry>& out)
 {
     out.clear();
     std::ifstream in(path);
-    if(!in.is_open()) return false;
+    if (!in.is_open()) return false;
+
+    auto parseLine = [](const std::string& ln, ScoreEntry& e) -> bool {
+        if (ln.empty()) return false;
+        std::istringstream ss(ln);
+        std::string init, tstr, dstr;
+        if (!std::getline(ss, init, ';')) return false;
+        if (!std::getline(ss, tstr, ';')) return false;
+        if (!std::getline(ss, dstr)) return false;
+        try {
+            e.initials = init;
+            e.timeSec  = std::stof(tstr);
+            e.deaths   = std::stoi(dstr);
+            return !e.initials.empty();
+        } catch (...) { return false; }
+    };
+
     std::string line;
-    if (std::getline(in, line)) { // chequeo encabezado
-        if (line.rfind("initials;",0) != 0) { in.clear(); in.seekg(0); }
-    }
-    while(std::getline(in, line)){
-        if(line.empty()) continue;
-        std::istringstream ss(line);
-        std::string init; char sep;
-        float t; int d;
-        if( (ss >> init >> sep >> t >> sep >> d) && !init.empty() ){
-            out.push_back({init, t, d});
+   
+    if (std::getline(in, line)) {
+        if (line.rfind("initials;", 0) != 0) {
+            ScoreEntry first{};
+            if (parseLine(line, first)) out.push_back(first); // primera fila era dato, no header
         }
+    }
+    // resto de filas
+    while (std::getline(in, line)) {
+        ScoreEntry e{};
+        if (parseLine(line, e)) out.push_back(e);
     }
     return true;
 }

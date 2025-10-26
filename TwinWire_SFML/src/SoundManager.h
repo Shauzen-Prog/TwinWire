@@ -52,6 +52,7 @@ private:
     // Pool de sonidos cortos
     struct SfxVoice {
         std::optional<sf::Sound> sound;
+        ResouceManager::SoundPtr buffer;
         bool inUse {false};
     };
     std::vector<SfxVoice> m_pool;

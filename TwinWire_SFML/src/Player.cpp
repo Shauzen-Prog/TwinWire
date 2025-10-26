@@ -309,6 +309,26 @@ void Player::update(float dt, const sf::RenderWindow& window)
     m_pos += m_vel * dt;
     m_sprite.setPosition(m_pos);
 
+    const sf::Vector2u win = window.getSize();
+    sf::FloatRect r = aabb(); // basado en pies (sprite position)
+
+    float dx = 0.f;
+    if (r.position.x < 0.f) {
+        dx = -r.position.x;                         
+    } else if (r.position.x + r.size.x > win.x) {
+        dx = win.x - (r.position.x + r.size.x);     
+    }
+
+    if (std::abs(dx) > 1e-4f) {
+        m_pos.x += dx;             
+        m_sprite.setPosition(m_pos); 
+        
+        if ((dx < 0.f && m_vel.x > 0.f) || (dx > 0.f && m_vel.x < 0.f)) {
+            m_vel.x = 0.f;
+            m_velX  = 0.f;
+        }
+    }
+    
     // --- tecla R: recall de emergencia ---
     const bool recallDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R);
     if (!m_prevRecall && recallDown) {
@@ -372,7 +392,6 @@ void Player::update(float dt, const sf::RenderWindow& window)
 void Player::draw(sf::RenderTarget& target) const
 {
     // el filamento va por detras por que se dibuja primero
-    // Dibujá primero para que queden atras del player
     m_filA.draw(target);
     m_filB.draw(target);
     target.draw(m_sprite);
@@ -388,7 +407,6 @@ void Player::handleEvent(const sf::Event& ev, const sf::RenderWindow& window)
         const sf::Vector2f mpWorld = window.mapPixelToCoords(mpPix);
 
         // Al presionar, oriento hacia el lado del click antes de disparar
-        // (según x del socket derecho, pero podrías usar el centro del sprite si preferís)
         const float handX = handSocketWorld(Hand::Right).x;
         m_facingRight = (mpWorld.x >= handX);
         applyVisualTransform();
@@ -400,21 +418,25 @@ void Player::handleEvent(const sf::Event& ev, const sf::RenderWindow& window)
 
         switch (mb->button) {
         case sf::Mouse::Button::Left: {
-                // LMB → Filament A (Right hand)
+                // LMB -> Filament A (Right hand)
                 if (A_free && B_free) {
                     lockMovement(0.12f, 0.0f);
-                    playLoopLastFrame(AnimId::LHSustain); // anim de mano izquierda (tu set actual)
+                    playLoopLastFrame(AnimId::LHSustain); // anim de mano izquierda 
                     m_filA.fireStraight(handSocketWorld(Hand::Right), mpWorld, /*canAttach=*/true);
+                    if (m_playSfx)
+                        m_playSfx("../../../../res/Assets/Audio/SFX/FilamentA.wav", 1.f, 1.f);
                 }
                 break;
         }
         case sf::Mouse::Button::Right: {
-                // RMB → Filament B (Left hand)
+                // RMB -> Filament B (Left hand)
                 if (B_free && (A_free || A_attached)) {
                     lockMovement(0.12f, 0.0f);
-                    playLoopLastFrame(AnimId::RHSustain); // anim de mano derecha (tu set actual)
+                    playLoopLastFrame(AnimId::RHSustain); // anim de mano derecha 
                     const bool canAttachB = A_attached; // si A ya está agarrado, B puede enganchar
                     m_filB.fireStraight(handSocketWorld(Hand::Left), mpWorld, canAttachB);
+                    if (m_playSfx)
+                        m_playSfx("../../../../res/Assets/Audio/SFX/FilamentB.wav", 1.f, 1.f);
                 }
                 break;
         }

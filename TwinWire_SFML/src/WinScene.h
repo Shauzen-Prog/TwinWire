@@ -1,6 +1,7 @@
 #pragma once
 #include "IScene.h"
 #include "ResouceManager.h"
+#include <optional>  
 
 class WinScene final : public IScene
 {
@@ -23,8 +24,13 @@ private:
     sf::Text m_prompt;
     sf::Text m_initialsText;
 
+    ResouceManager::TexturePtr m_bgTex;
+    std::optional<sf::Sprite> m_bg; 
+
     std::string m_initials; // max 3
     bool m_saved{false};
 
     void refreshText();
+    void layoutTexts(const sf::Vector2u& winSz);
+    void fitBackgroundToWindow(const sf::Vector2u& winSz);
 };

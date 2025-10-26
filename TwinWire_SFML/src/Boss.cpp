@@ -5,6 +5,7 @@
 #include <random>
 #include <cmath>
 #include "IBulletEmitter.h"
+#include "SoundManager.h"
 
 static float deg2rad(float d) { return d * 3.14159265358979323846f / 180.f; }
 
@@ -123,25 +124,6 @@ m_fsm(*this), m_cfg(p), m_emitter(emitter), m_orbs(orbs)
     resetAttackCooldown();
 }
 
-//void Boss::setSprite(ResouceManager& rm, const std::string& texturePath, float scale, std::optional<sf::IntRect> rect)
-//{
-//    m_tex = rect ? rm.getTexture(texturePath, rect) : rm.getTexture(texturePath);
-//    if (!m_tex) return;
-//
-//    m_tex->setSmooth(true);
-//
-//    m_sprite->setTexture(*m_tex);
-//    if (rect) m_sprite->setTextureRect(*rect);
-//
-//    const sf::FloatRect lb = m_sprite->getLocalBounds();
-//    m_sprite->setOrigin({ lb.position.x + lb.size.x * 0.5f,
-//                         lb.position.y + lb.size.y });
-//
-//    m_sprite->setScale({ scale, scale });
-//    m_sprite->setPosition(m_position);
-//}
-
-
 
 void Boss::startReload(float seconds)
 {
@@ -228,6 +210,12 @@ void Boss::updateColorFX(float dt)
     }
 }
 
+
+void Boss::playSfx_(const std::string& p, float pitch, float vol)
+{
+    if (m_playSfx && !p.empty())
+        m_playSfx(p, pitch, std::clamp(m_sfx.volume * vol, 0.f, 1.f));
+}
 
 void Boss::setPhaseRects(const PhaseRects& pr)
 {
@@ -375,6 +363,8 @@ void Boss::onEnterAbsorb()
     m_absorbTimer = m_cfg.absorbTime;
     m_beamPulseT = 0.f;
 
+    playSfx_(m_sfx.absorbStart, 1.f, 1.f);
+
     //color por fase
     const sf::Color col = (m_phase == Phase::P1) ? m_cfg.beamColorP1 : m_cfg.beamColorP2;
     m_beam.setFillColor(col);
@@ -423,7 +413,7 @@ void Boss::onUpdateAbsorb(float dt)
 
 void Boss::onEnterHurt()
 {
-    // algun feedback mas adelante que sea rapido puede estar aca
+    playSfx_(m_sfx.hurt, 1.f, 1.f);
     m_currentOrb = nullptr;
 }
 
@@ -448,6 +438,17 @@ void Boss::onUpdateDead(float dt)
 }
 
 void Boss::beginWave() {
+
+    switch (m_wave.pattern)
+    {
+    case WavePattern::ToPlayerPulse:
+        playSfx_(m_sfx.straight, 1.f, 1.f);
+        break;
+    case WavePattern::RingLoopGap:
+    case WavePattern::RingOnce:
+        playSfx_(m_sfx.ring, 1.f, 1.f);
+        break;
+    }
     
     // Duracion de esta wave
     std::uniform_real_distribution<float> durDist(m_cfg.waveDurationMin, m_cfg.waveDurationMax);

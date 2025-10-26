@@ -14,11 +14,12 @@
 #include "Pillar.h"
 #include "ResouceManager.h"
 #include "Player.h"
-#include "SpriteAnimator.h" // por FrameMeta (solo tipo)
+#include "SpriteAnimator.h"
 #include "BulletPool.h"
 #include "BulletEmitter.h"
 #include "HUD.h"
 #include "PauseLayer.h"
+#include "AudioOptionsPanel.h"
 
 
 class Pillar;             // fwd
@@ -43,6 +44,9 @@ public:
 private:
 
     void resetAll(); // helper para dejar como recien creado
+
+    UIManager m_pauseUI;
+    UIManager m_pauseOptionsUI;
         
     // --- Background ---
     struct MultiPillarQuery;                       //fwd anidada
@@ -53,6 +57,10 @@ private:
     std::unique_ptr<sf::Sprite> m_bgSprite;
     std::unique_ptr<sf::Sprite> m_floorSprite;
     bool m_bgPixelPerfect = true;
+
+    SoundManager* m_sound{nullptr};
+    bool m_paused{false};
+    bool m_showPauseOptions{false};
     
     sf::FloatRect m_playerAABB{};
     PauseLayer m_pause;

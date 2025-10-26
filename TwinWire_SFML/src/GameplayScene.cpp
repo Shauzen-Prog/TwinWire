@@ -91,6 +91,8 @@ struct GameplayScene::MultiPillarQuery : IChokeQuery {
     }
 };
 
+static constexpr const char* SFX_PLAYER_DIE = "../../../../res/Assets/Audio/SFX/PlayerDie.wav";
+
 GameplayScene::GameplayScene(std::string sheetPath)
 : m_sheetPath(std::move(sheetPath)), m_player(m_res, "../Assets/Sprites/Player/PlayerSpriteSheet.png")
 {
@@ -100,17 +102,25 @@ GameplayScene::GameplayScene(std::string sheetPath)
 void GameplayScene::PauseSetUp(Game& game)
 {
     m_uiFont = m_res.getFont("../../../../res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf");
+    
+    m_pause.setSoundManager(&game.sound());
+    m_pause.setResourceManager(&m_res);
+    m_pause.setFontPath("../Assets/Fonts/PixelifySans-VariableFont_wght.ttf");
+
     m_pause.build(*m_uiFont, game.Window().getSize());
 
+    const auto win = game.Window().getSize();
+    m_pause.setPanelCenterX(win.x * 0.59f); 
+    m_pause.setPanelTopY( win.y * 0.75f ); 
+    
     m_pause.setOnResume([this]()
     {
         m_pause.hide();
     });
 
-    m_pause.setOnOptions([]()
+    m_pause.setOnOptions([this]()
     {
-       // TODO: abrir submenu de opciones cuando este listo
-        
+        m_pause.showOptions(true);
     });
 
     m_pause.setOnExit([&game]()
@@ -127,7 +137,7 @@ void GameplayScene::onEnter(Game& game)
     
     // Fondo
     m_bgTex = m_res.getTexture("../Assets/Backgrounds/BackGround.png");
-    m_floorTex = m_res.getTexture("../Assets/Backgrounds/Floor1.png");
+    m_floorTex = m_res.getTexture("../Assets/Backgrounds/Floor.png");
     if (m_floorTex)
     {
         m_floorTex->setSmooth(true);
@@ -152,7 +162,7 @@ void GameplayScene::onEnter(Game& game)
     const float h = static_cast<float>(win.y);
     const float margin = 192.f; // margen fuera de la camara
     
-    const float groundY = win.y * 0.965f; 
+    const float groundY = win.y * 0.965f;
     
     m_cullRect = sf::FloatRect({-margin, -margin}, {w + margin * 2.f, h + margin * 2.f});
     
@@ -169,6 +179,9 @@ void GameplayScene::onEnter(Game& game)
 
     Orb& oLeft = spawnOrb(m_res, "../Assets/Sprites/Orb1.png", {win.x * 0.2f, yOrbs}, 1.f);
     Orb& oRight = spawnOrb(m_res, "../Assets/Sprites/Orb1.png", {win.x * 0.8f, yOrbs}, 1.f);
+
+    oLeft.setSoundManager(&game.sound());
+    oRight.setSoundManager(&game.sound());
 
     m_orbViews.clear();
     m_orbViews.reserve(m_orbs.size());
@@ -275,10 +288,22 @@ void GameplayScene::onEnter(Game& game)
     /*emitter*/ m_emitter.get(),
     /*orbs*/    &m_orbViews
 );
+    
+    m_boss->setPlaySfx([sm = &game.sound()](const std::string& path, float pitch, float vol) {
+        sm->playSfx(path, pitch, vol);
+    });
+    
+    Boss::SfxConfig sfx;
+    sfx.straight    = "../../../../res/Assets/Audio/SFX/AttackNormal.wav";
+    sfx.ring        = "../../../../res/Assets/Audio/SFX/AttackRing.wav";
+    sfx.absorbStart = "../../../../res/Assets/Audio/SFX/BossCharge.wav";
+    sfx.hurt        = "../../../../res/Assets/Audio/SFX/BossDamaged.wav";
+    sfx.volume      = 1.0f;
+    m_boss->setSfx(sfx);
 
     m_boss->setSprite(m_res, cfg);
     m_boss->setOnDeath([this, &game]() {
-     // Deferimos la reacción a fin de frame (evitar destruir cosas en medio del update del boss)
+     
      m_deferred.push_back([this, &game]() {
 
          game.SwitchTo(SceneId::WinScene);
@@ -293,7 +318,12 @@ void GameplayScene::onEnter(Game& game)
     });
     
     m_query = std::make_unique<MultiPillarQuery>(); // ctor vacío
-    m_query->pillars = &m_livePtrs;                
+    m_query->pillars = &m_livePtrs;
+
+    m_player.setPlaySfx([sm = &game.sound()](const std::string& path, float pitch, float vol) {
+    sm->playSfx(path, pitch, vol);
+    });
+    
     m_player.setChokeQuery(m_query.get());
     
     m_player.setChokeQuery(m_query.get());
@@ -306,13 +336,21 @@ void GameplayScene::onEnter(Game& game)
     m_restarTimer = -1.f;
 
     PauseSetUp(game);
+    m_pause.showOptions(false);
     m_pause.hide();
-
+    
     RunStats::start();
 
     // HUD
     if (!m_hud) m_hud = std::make_unique<HUD>(m_res);
     m_hud->setViewport(game.Window());
+    
+    m_sound = &game.sound();
+
+    if (m_sound) {
+        m_sound->stopMusic();
+        m_sound->playMusic("../../../../res/Assets/Audio/Music/GameplayMusic.ogg", true);
+    }
 }
 
 void GameplayScene::onExit(Game& game)
@@ -354,6 +392,7 @@ void GameplayScene::handleEvent(Game& game, const sf::Event& ev)
         const float margin = 192.f;
         m_cullRect = sf::FloatRect({-margin, -margin}, {w + margin * 2.f, h + margin * 2.f});
         m_pause.build(*m_uiFont, { r->size.x, r->size.y });
+        m_pause.setSoundManager(&game.sound());
     }
 
     if (ev.is<sf::Event::KeyPressed>())
@@ -366,11 +405,11 @@ void GameplayScene::handleEvent(Game& game, const sf::Event& ev)
             return; // el return previene las acciones en el frame
         }
     }
-    // Si la pausa es visible, manda un evento a "pauselayer" y para
+    
     if (m_pause.isVisible())
     {
-    m_pause.handleEvent(ev, game.Window());
-    return;
+        m_pause.handleEvent(ev, game.Window());
+        return;
     }
 
 
@@ -395,8 +434,13 @@ void GameplayScene::update(Game& game, float dt)
     
     if (m_pause.isVisible()) {
         m_pause.update(dt);
+        
         return; // freezea el juego mientras esta en pausa
     }
+
+    if (!RunStats::isRunning())
+        RunStats::start();
+    
     
 #ifdef _DEBUG
     if (m_boss) {
@@ -436,13 +480,15 @@ void GameplayScene::update(Game& game, float dt)
         }
         return;
     }
-
-    RunStats::update(dt); // <- suma al timer
+    
+    
     
     if (playerHit) {
         // entra al estado de muerte
         m_playerDead = true;
 
+        if (m_sound) m_sound->playSfx(SFX_PLAYER_DIE, /*pitch*/1.f, /*vol*/1.f);
+        
         // suma 1 muerte
         RunStats::addDeath(); 
         //Reproduce Die una sola vez y congela al final
@@ -452,6 +498,8 @@ void GameplayScene::update(Game& game, float dt)
 
         return;
     }
+
+    RunStats::update(dt);
     
     m_player.update(dt, game.Window()); //flip hacia le mouse
 
@@ -505,7 +553,15 @@ void GameplayScene::draw(Game& game, sf::RenderTarget& target)
 
     // al final para que se dibuje arriba de todo
     if (m_pause.isVisible())
+    {
+        const auto win = game.Window().getSize();
+        sf::RectangleShape dim({ float(win.x), float(win.y) });
+        dim.setFillColor(sf::Color(0, 0, 0, 140));
+        target.draw(dim);
+        
         m_pause.draw(target);
+        
+    }
 
     if (m_hud) target.draw(*m_hud); // <- overlay final
         

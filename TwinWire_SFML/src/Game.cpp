@@ -51,7 +51,12 @@ void Game::createWindow()
     unsigned int windowWidth = 1280;
     unsigned int windowHeight = 720;
     
-    m_window = std::make_unique<sf::RenderWindow>(sf::VideoMode({windowWidth,windowHeight}), "TwinWire");
+    m_window = std::make_unique<sf::RenderWindow>(sf::VideoMode({windowWidth,windowHeight}), "TwinWire", sf::Style::None);
+    const auto desktop = sf::VideoMode::getDesktopMode();
+    const int x = (int)desktop.size.x / 2 - (int)windowWidth  / 2;
+    const int y = (int)desktop.size.y / 2 - (int)windowHeight / 2;
+    m_window->setPosition({ x, y });
+    
     m_window->setFramerateLimit(60);
 }
 

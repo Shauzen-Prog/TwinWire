@@ -6,6 +6,7 @@
 #include "Filament.h"
 #include "IChockeable.h"
 #include "IChokeQuery.h"
+#include "SoundManager.h"
 
 enum class AnimId { Idle, Walk, LHSustain, LHRelease, RHSustain, RHRelease, Die };
 
@@ -13,6 +14,8 @@ class Player
 {
 public:
     enum Hand { Left, Right };
+
+    void setPlaySfx(std::function<void(const std::string&, float, float)> fn) { m_playSfx = std::move(fn); }
     
     struct Tuning {
         sf::Vector2f pivotOffset   { 8.f, 0.f };   // “pies” global (X,Y)
@@ -108,6 +111,7 @@ private:
     ResouceManager& m_rm;
     ResouceManager::TexturePtr m_sheet;   // spritesheet completo
     Tuning m_tuning;
+    std::function<void(const std::string&, float, float)> m_playSfx;
 
     bool m_prevRecall = false; 
     

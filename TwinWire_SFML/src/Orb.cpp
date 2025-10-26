@@ -49,6 +49,9 @@ void Orb::breakOrb()
 
     m_active = false;
     m_respawnTimer = m_respawnTime;
+
+    if (m_sound)
+        m_sound->playSfx("../../../../res/Assets/Audio/SFX/OrbBreak.wav", 1.f, 1.f);
 }
 
 sf::Vector2f Orb::getPosition() const

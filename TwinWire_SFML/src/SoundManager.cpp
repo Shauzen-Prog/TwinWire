@@ -1,5 +1,6 @@
 #include "SoundManager.h"
 #include <algorithm>
+#include <iostream>
 
 SoundManager::SoundManager(ResouceManager& rm, int sfxPoolSize)
 : m_rm(rm)
@@ -48,20 +49,27 @@ void SoundManager::playSfx(const std::string& path, float pitch, float vol)
         });
 
     if (it == m_pool.end()) {
-        // Si todas usadas, pisa la primera que este Stopped
         it = m_pool.begin();
     }
 
     // Carga buffer desde ResourceManager (cache)
     ResouceManager::SoundPtr buf = m_rm.getSound(path);
-    if (!buf) return;
+    if (!buf) {
+        std::cout << "[SoundManager] getSound FAIL: " << path << "\n";
+        return;
+    }
     
+    it->buffer = buf;
+
     if (!it->sound) {
         it->sound.emplace(*buf); 
     } else {
         it->sound->stop();
         it->sound->setBuffer(*buf);
     }
+    
+    it->sound->setRelativeToListener(true);
+    it->sound->setAttenuation(0.f);
 
     it->sound->setPitch(std::max(0.01f, pitch));
     it->sound->setVolume(currentSfxSfmlVolume(std::max(0.f, std::min(1.f, vol))));
@@ -103,6 +111,7 @@ void SoundManager::update()
             if (!v.sound || v.sound->getStatus() == sf::Sound::Status::Stopped) {
                 v.inUse = false;
                 v.sound.reset();
+                v.buffer.reset();
             }
         }
     }
