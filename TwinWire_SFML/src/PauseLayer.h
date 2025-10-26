@@ -50,7 +50,7 @@ private:
     sf::RectangleShape m_dim;
 
     std::unique_ptr<AudioOptionsPanel> m_audioPanel;
-    std::string m_fontPath = "../Assets/Fonts/PixelifySans-VariableFont_wght.ttf";
+    std::string m_fontPath = "res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf";
 
     // CallBacks de los botones
     std::function<void()> m_onResume;

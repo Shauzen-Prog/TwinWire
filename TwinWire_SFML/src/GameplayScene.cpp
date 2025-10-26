@@ -12,6 +12,9 @@
 #include "RunStats.h"
 #include "SFML/Graphics.hpp"
 #include "PlayerAABB.h"
+#include <filesystem>
+#include <iostream>
+
 
 
 #ifdef _DEBUG
@@ -91,21 +94,22 @@ struct GameplayScene::MultiPillarQuery : IChokeQuery {
     }
 };
 
-static constexpr const char* SFX_PLAYER_DIE = "../../../../res/Assets/Audio/SFX/PlayerDie.wav";
+static constexpr const char* SFX_PLAYER_DIE = "res/Assets/Audio/SFX/PlayerDie.wav";
 
 GameplayScene::GameplayScene(std::string sheetPath)
-: m_sheetPath(std::move(sheetPath)), m_player(m_res, "../Assets/Sprites/Player/PlayerSpriteSheet.png")
+: m_sheetPath(std::move(sheetPath)), m_player(m_res, "res/Assets/Sprites/Player/PlayerSpriteSheet.png")
 {
-    
+
+    std::cout << "CWD: " << std::filesystem::current_path().string() << '\n';
 }
 
 void GameplayScene::PauseSetUp(Game& game)
 {
-    m_uiFont = m_res.getFont("../../../../res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf");
+    m_uiFont = m_res.getFont("res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf");
     
     m_pause.setSoundManager(&game.sound());
     m_pause.setResourceManager(&m_res);
-    m_pause.setFontPath("../Assets/Fonts/PixelifySans-VariableFont_wght.ttf");
+    m_pause.setFontPath("res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf");
 
     m_pause.build(*m_uiFont, game.Window().getSize());
 
@@ -136,8 +140,8 @@ void GameplayScene::onEnter(Game& game)
     m_restarTimer = -1.f;
     
     // Fondo
-    m_bgTex = m_res.getTexture("../Assets/Backgrounds/BackGround.png");
-    m_floorTex = m_res.getTexture("../Assets/Backgrounds/Floor.png");
+    m_bgTex = m_res.getTexture("res/Assets/Backgrounds/BackGround.png");
+    m_floorTex = m_res.getTexture("res/Assets/Backgrounds/Floor.png");
     if (m_floorTex)
     {
         m_floorTex->setSmooth(true);
@@ -150,7 +154,7 @@ void GameplayScene::onEnter(Game& game)
         rebuildBackgroundForWindow(game.Window());
     }
 
-    const std::string kBulletTex = "../Assets/Sprites/BossBullet1.png";
+    const std::string kBulletTex = "res/Assets/Sprites/BossBullet1.png";
     const sf::Vector2f kBulletScale{0.35f, 0.35f};
 
     m_emitter = std::make_unique<BulletEmitter>(
@@ -169,16 +173,16 @@ void GameplayScene::onEnter(Game& game)
     // altura de los orbes
     const float yOrbs = win.y * 0.60f;
 
-    Pillar& p1Left = spawnPillar(m_res, "../Assets/Sprites/Pillar.png",
+    Pillar& p1Left = spawnPillar(m_res, "res/Assets/Sprites/Pillar.png",
                              std::nullopt,
                              {win.x * 0.05f, groundY}, 1.f);
 
-    Pillar& p2Right = spawnPillar(m_res, "../Assets/Sprites/Pillar.png",
+    Pillar& p2Right = spawnPillar(m_res, "res/Assets/Sprites/Pillar.png",
                              std::nullopt,
                              {win.x * 0.95f, groundY}, 1.f);
 
-    Orb& oLeft = spawnOrb(m_res, "../Assets/Sprites/Orb1.png", {win.x * 0.2f, yOrbs}, 1.f);
-    Orb& oRight = spawnOrb(m_res, "../Assets/Sprites/Orb1.png", {win.x * 0.8f, yOrbs}, 1.f);
+    Orb& oLeft = spawnOrb(m_res, "res/Assets/Sprites/Orb1.png", {win.x * 0.2f, yOrbs}, 1.f);
+    Orb& oRight = spawnOrb(m_res, "res/Assets/Sprites/Orb1.png", {win.x * 0.8f, yOrbs}, 1.f);
 
     oLeft.setSoundManager(&game.sound());
     oRight.setSoundManager(&game.sound());
@@ -226,7 +230,7 @@ void GameplayScene::onEnter(Game& game)
     bp.startPos = { W * 0.5f, H * 0.25f };
     
     Boss::VisualConfig cfg;
-    cfg.sheetPath = "../../../../res/Assets/Sprites/Boss/BossSpriteSheet1.png";
+    cfg.sheetPath = "res/Assets/Sprites/Boss/BossSpriteSheet1.png";
 
     // Fase 1
     cfg.p1.rect  = {{0, 0}, {207, 300} };
@@ -294,10 +298,10 @@ void GameplayScene::onEnter(Game& game)
     });
     
     Boss::SfxConfig sfx;
-    sfx.straight    = "../../../../res/Assets/Audio/SFX/AttackNormal.wav";
-    sfx.ring        = "../../../../res/Assets/Audio/SFX/AttackRing.wav";
-    sfx.absorbStart = "../../../../res/Assets/Audio/SFX/BossCharge.wav";
-    sfx.hurt        = "../../../../res/Assets/Audio/SFX/BossDamaged.wav";
+    sfx.straight    = "res/Assets/Audio/SFX/AttackNormal.wav";
+    sfx.ring        = "res/Assets/Audio/SFX/AttackRing.wav";
+    sfx.absorbStart = "res/Assets/Audio/SFX/BossCharge.wav";
+    sfx.hurt        = "res/Assets/Audio/SFX/BossDamaged.wav";
     sfx.volume      = 1.0f;
     m_boss->setSfx(sfx);
 
@@ -349,7 +353,7 @@ void GameplayScene::onEnter(Game& game)
 
     if (m_sound) {
         m_sound->stopMusic();
-        m_sound->playMusic("../../../../res/Assets/Audio/Music/GameplayMusic.ogg", true);
+        m_sound->playMusic("res/Assets/Audio/Music/GameplayMusic.ogg", true);
     }
 }
 

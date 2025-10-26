@@ -14,7 +14,7 @@ static std::string formatTimeMMSS(float t)
 }
 
 HUD::HUD(ResouceManager& rm):
-m_font{ rm.getFont("../../../../res/Assets/Fonts/Jersey25-Regular.ttf")}
+m_font{ rm.getFont("res/Assets/Fonts/Jersey25-Regular.ttf")}
 , m_text( *m_font, "Tiempo 00:00   Muertes 0", 32u)
 {
     m_text.setFillColor(sf::Color::White);

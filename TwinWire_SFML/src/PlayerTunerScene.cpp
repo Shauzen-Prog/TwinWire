@@ -44,7 +44,7 @@ void PlayerTunerScene::onEnter(Game& game)
 
     // Fuente opcional para overlay
     try {
-        m_font = m_res.getFont("../Assets/Font/DejaVuSans.ttf");
+        m_font = m_res.getFont("res/Assets/Font/DejaVuSans.ttf");
         if (m_font) {
             m_text.setFont(*m_font);
             m_text.setCharacterSize(16);

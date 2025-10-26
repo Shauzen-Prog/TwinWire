@@ -4,8 +4,8 @@
 #include "Game.h"
 #include <cstdio>
 
-static const char* WIN_BG_PATH   = "../Assets/Backgrounds/BackGround.png";
-static const char* WIN_MUSIC_PATH= "../Assets/Audio/Music/Win.ogg";
+static const char* WIN_BG_PATH   = "res/Assets/Backgrounds/BackGround.png";
+static const char* WIN_MUSIC_PATH= "res/Assets/Audio/Music/Win.ogg";
 
 static std::string fmtMMSS(float t)
 {
@@ -26,7 +26,7 @@ void WinScene::refreshText()
 
 WinScene::WinScene(ResouceManager& rm)
 : m_rm(rm)
-, m_font{ m_rm.getFont("../../../../res/Assets/Fonts/Jersey25-Regular.ttf") }
+, m_font{ m_rm.getFont("res/Assets/Fonts/Jersey25-Regular.ttf") }
 , m_title{ *m_font, "GANASTE!", 80u }
 , m_stats{ *m_font, "", 34u }
 , m_prompt{ *m_font, "Ingresa tu iniciales (3 letras) Y preciona Enter:", 30u }
@@ -75,7 +75,7 @@ void WinScene::onEnter(Game& game)
     refreshText();
 
     if (!m_bgTex) {
-        m_bgTex = m_rm.getTexture("../../../../res/Assets/Backgrounds/BackGround.png");
+        m_bgTex = m_rm.getTexture("res/Assets/Backgrounds/BackGround.png");
     }
     if (!m_bg && m_bgTex) {
         m_bg.emplace(*m_bgTex);       // <-- construir sprite con la textura
@@ -123,7 +123,7 @@ void WinScene::handleEvent(Game& game, const sf::Event& ev)
     if (const auto* k = ev.getIf<sf::Event::KeyPressed>()) {
         if (k->code == sf::Keyboard::Key::Enter && !m_saved && m_initials.size()==3) {
             std::vector<ScoreEntry> data;
-            const std::string hsPath = "../Saves/HighScore.csv";
+            const std::string hsPath = "res/Saves/HighScore.csv";
             HighScore::load(hsPath, data);
             HighScore::insertAndSort(data, ScoreEntry{m_initials, RunStats::elapsed(), RunStats::deaths()});
             HighScore::save(hsPath, data);

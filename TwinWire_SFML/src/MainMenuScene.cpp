@@ -11,7 +11,7 @@
 #include "BulletEmitter.h"
 
 // --- UI SFX (press only) ---
-static const char* SFX_PRESS = "../../../../res/Assets/Audio/SFX/ButtonPress.wav";
+static const char* SFX_PRESS = "res/Assets/Audio/SFX/ButtonPress.wav";
 struct BtnRect { sf::FloatRect r{}; };
 static BtnRect s_play, s_play2,s_options, s_credits, s_exit;
 
@@ -28,7 +28,7 @@ static std::string fmtMMSS(float t)
 }
 
 MainMenuScene::MainMenuScene()
-: m_font(m_rm.getFont("../Assets/Fonts/PixelifySans-VariableFont_wght.ttf")),
+: m_font(m_rm.getFont("res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf")),
   m_title(*m_font, "", 13),
   m_best{*m_font, "", 20u},
   m_creditsTitle(*m_font, "Creditos", 36u),
@@ -72,15 +72,15 @@ MainMenuScene::MainMenuScene()
 
 void MainMenuScene::onEnter(Game& game)
 {
-    game.sound().playMusic("../Assets/Audio/Music/MainMenu.ogg", true);
+    game.sound().playMusic("res/Assets/Audio/Music/MainMenu.ogg", true);
 
     if (!m_audioPanel) {
         m_audioPanel = std::make_unique<AudioOptionsPanel>(
             game.sound(),                 
             game.Resources(),             
-            "../Assets/Fonts/PixelifySans-VariableFont_wght.ttf"
+            "res/Assets/Fonts/PixelifySans-VariableFont_wght.ttf"
         );
-        m_audioPanel->set_feedback_sfx("../Assets/Audio/SFX/SFXFeedback1.ogg");
+        m_audioPanel->set_feedback_sfx("res/Assets/Audio/SFX/SFXFeedback1.ogg");
     }
     
     
@@ -94,7 +94,7 @@ void MainMenuScene::onEnter(Game& game)
                                {win.x + margin * 2.f, win.y + margin * 2.f});
     
     // --- Fondo ---
-    m_bgTex = m_rm.getTexture("../Assets/Backgrounds/BackGround2.png"); // <-- cambia el path si querés otro
+    m_bgTex = m_rm.getTexture("res/Assets/Backgrounds/BackGround2.png"); // <-- cambia el path si querés otro
     if (m_bgTex) {
         m_bgTex->setSmooth(false);
         m_bgSprite = std::make_unique<sf::Sprite>(*m_bgTex);
@@ -108,7 +108,7 @@ void MainMenuScene::onEnter(Game& game)
     const float H = static_cast<float>(win.y);
 
     // Emisor visual
-    const std::string bulletTex = "../Assets/Sprites/BossBullet1.png";
+    const std::string bulletTex = "res/Assets/Sprites/BossBullet1.png";
     const sf::Vector2f bulletScale{0.35f, 0.35f};
     m_emitter = std::make_unique<BulletEmitter>(m_bullets, game.Resources(), bulletTex, bulletScale);
 
@@ -128,7 +128,7 @@ void MainMenuScene::onEnter(Game& game)
     bp.waveGapMax = 0.25f;
 
     Boss::VisualConfig cfg;
-    cfg.sheetPath = "../../../../res/Assets/Sprites/Boss/BossSpriteSheet1.png";
+    cfg.sheetPath = "res/Assets/Sprites/Boss/BossSpriteSheet1.png";
 
     // Fase 1
     cfg.p1.rect  = {{0, 0}, {207, 300}};
@@ -164,8 +164,8 @@ void MainMenuScene::onEnter(Game& game)
     bp.startPos = { W * 0.5f, H * 0.4f };
 
     Boss::SfxConfig sfx;
-    sfx.straight = "../../../../res/Assets/Audio/SFX/AttackNormal.wav";
-    sfx.ring = "../../../../res/Assets/Audio/SFX/AttackRing.wav";
+    sfx.straight = "res/Assets/Audio/SFX/AttackNormal.wav";
+    sfx.ring = "res/Assets/Audio/SFX/AttackRing.wav";
     sfx.volume = 0.2f;
     m_boss->setSfx(sfx);
 
@@ -191,7 +191,7 @@ void MainMenuScene::onEnter(Game& game)
 
     // ---------- HighScore ----------
     std::vector<ScoreEntry> data;
-    HighScore::load("../Saves/HighScore.csv", data);
+    HighScore::load("res/Saves/HighScore.csv", data);
     
     // Filtra validos y ordenar por tiempo (usa LINQ-templates)
     auto valid  = where(data, [](const ScoreEntry& s){ return s.timeSec > 0.f; });

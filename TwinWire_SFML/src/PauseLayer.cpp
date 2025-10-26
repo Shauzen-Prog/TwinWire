@@ -75,7 +75,7 @@ void PauseLayer::build(const sf::Font& font, const sf::Vector2u& windowSize)
         m_audioPanel = std::make_unique<AudioOptionsPanel>(
             *m_sm, *m_rm, m_fontPath
         );
-        m_audioPanel->set_feedback_sfx("../Assets/Audio/SFX/SFXFeedback1.ogg");
+        m_audioPanel->set_feedback_sfx("res/Assets/Audio/SFX/SFXFeedback1.ogg");
     }
 
     if (m_audioPanel) {
@@ -120,7 +120,7 @@ void PauseLayer::handleEvent(const sf::Event& ev, const sf::RenderWindow& window
                 over = s_backBtn.r.contains(mp);
             }
             if (over) {
-                m_sm->playSfx("../../../../res/Assets/Audio/SFX/ButtonPress.wav", 1.f, 1.f);
+                m_sm->playSfx("res/Assets/Audio/SFX/ButtonPress.wav", 1.f, 1.f);
             }
         }
     }

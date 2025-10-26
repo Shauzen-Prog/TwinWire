@@ -73,11 +73,11 @@ void Game::registerScenes()
 {
     m_scenes.emplace(SceneId::MainMenu, std::make_unique<MainMenuScene>());
     
-    m_scenes.emplace(SceneId::Gameplay, std::make_unique<GameplayScene>("../Assets/Sprites/Player/PlayerSpriteSheet.png"));
+    m_scenes.emplace(SceneId::Gameplay, std::make_unique<GameplayScene>("res/Assets/Sprites/Player/PlayerSpriteSheet.png"));
 
     m_scenes.emplace(SceneId::WinScene, std::make_unique<WinScene>(m_res));
 
-    m_scenes.emplace(SceneId::PlayerTuner, std::make_unique<PlayerTunerScene>("../Assets/Sprites/Player/PlayerSpriteSheet.png"));
+    m_scenes.emplace(SceneId::PlayerTuner, std::make_unique<PlayerTunerScene>("res/Assets/Sprites/Player/PlayerSpriteSheet.png"));
     
 }
 

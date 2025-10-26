@@ -183,8 +183,8 @@
       </EntryPointSymbol>
     </Link>
     <PostBuildEvent>
-      <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"
-XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
+      <Command>IF NOT EXIST "$(TargetDir)res\" MKDIR "$(TargetDir)res\"
+XCOPY "$(ProjectDir)res\*" "$(TargetDir)res\" /E /I /Y /H /R</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -208,8 +208,8 @@ XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
       </EntryPointSymbol>
     </Link>
     <PostBuildEvent>
-      <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"
-XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
+      <Command>IF NOT EXIST "$(TargetDir)res\" MKDIR "$(TargetDir)res\"
+XCOPY "$(ProjectDir)res\*" "$(TargetDir)res\" /E /I /Y /H /R</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -236,8 +236,15 @@ XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <PostBuildEvent>
-      <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"
-XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
+      <Command>REM Crear res junto al EXE y copiar contenido
+IF NOT EXIST "$(TargetDir)res\" MKDIR "$(TargetDir)res\"
+ROBOCOPY "$(ProjectDir)res" "$(TargetDir)res" /E /XO &gt;nul
+
+REM Copiar DLLs al lado del EXE (no dentro de res\dll)
+IF EXIST "$(ProjectDir)res\dll\" ROBOCOPY "$(ProjectDir)res\dll" "$(TargetDir)" *.dll /XO &gt;nul
+
+IF %ERRORLEVEL% LEQ 1 EXIT /B 0
+EXIT /B 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -262,10 +269,12 @@ XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-system.lib;sfml-window.lib;sfml-graphics.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
-      <Command>IF NOT EXIST "$(TergetDir)res\" MKDIR "$(TargetDir)res\"
-XCOPY "$(ProjectDir)res\" "$(TargetDir)res\" /e /h /y /s</Command>
+      <Command>IF NOT EXIST "$(TargetDir)res\" MKDIR "$(TargetDir)res\"
+XCOPY "$(ProjectDir)res\*" "$(TargetDir)res\" /E /I /Y /H /R</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

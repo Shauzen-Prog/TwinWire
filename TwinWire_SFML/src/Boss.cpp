@@ -724,7 +724,7 @@ std::unique_ptr<Boss> Boss::CreateDefault(
 {
     // Spritesheet y rects por defecto (ajustá si tus coords reales difieren)
     VisualConfig cfg;
-    cfg.sheetPath = "../../res/Assets/Sprites/Boss/BossSpriteSheet1.png";
+    cfg.sheetPath = "res/Assets/Sprites/Boss/BossSpriteSheet1.png";
     cfg.rects.p1 = {{0, 0}, {207, 300} };
     cfg.rects.p2 = {{207, 0}, {229, 300} };
     cfg.rects.p3 = {{438, 0}, {220, 300 } };

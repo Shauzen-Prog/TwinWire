@@ -424,7 +424,7 @@ void Player::handleEvent(const sf::Event& ev, const sf::RenderWindow& window)
                     playLoopLastFrame(AnimId::LHSustain); // anim de mano izquierda 
                     m_filA.fireStraight(handSocketWorld(Hand::Right), mpWorld, /*canAttach=*/true);
                     if (m_playSfx)
-                        m_playSfx("../../../../res/Assets/Audio/SFX/FilamentA.wav", 1.f, 1.f);
+                        m_playSfx("res/Assets/Audio/SFX/FilamentA.wav", 1.f, 1.f);
                 }
                 break;
         }
@@ -436,7 +436,7 @@ void Player::handleEvent(const sf::Event& ev, const sf::RenderWindow& window)
                     const bool canAttachB = A_attached; // si A ya está agarrado, B puede enganchar
                     m_filB.fireStraight(handSocketWorld(Hand::Left), mpWorld, canAttachB);
                     if (m_playSfx)
-                        m_playSfx("../../../../res/Assets/Audio/SFX/FilamentB.wav", 1.f, 1.f);
+                        m_playSfx("res/Assets/Audio/SFX/FilamentB.wav", 1.f, 1.f);
                 }
                 break;
         }
